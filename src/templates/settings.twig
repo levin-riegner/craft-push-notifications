@@ -1,0 +1,35 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Craft push notifications plugin for Craft CMS 3.x
+ *
+ * Craft push notifications Settings.twig
+ *
+ * @author    Levinriegner
+ * @copyright Copyright (c) 2019 Levinriegner
+ * @link      https://levinriegner.com
+ * @package   CraftPushNotifications
+ * @since     0.1.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("levinriegner\\craftpushnotifications\\assetbundles\\craftpushnotifications\\CraftPushNotificationsAsset") %}
+
+{{ forms.textareaField({
+    label: 'APN PEM file',
+    instructions: 'Enter your iOS APN PEM file.',
+    id: 'pemFile',
+    name: 'pemFile',
+    rows: 20,
+    value: settings['pemFile']})
+}}
+
+{{ forms.textField({
+    label: 'APN PEM password',
+    instructions: '(Optional) Enter your iOS APN PEM password',
+    id: 'pemPass',
+    name: 'pemPass',
+    value: settings['pemPass']})
+}}

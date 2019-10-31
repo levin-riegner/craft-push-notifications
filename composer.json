@@ -1,0 +1,48 @@
+{
+    "name": "levinriegner/craft-push-notifications",
+    "description": "Enable sending push notifications from Craft",
+    "type": "craft-plugin",
+    "version": "0.1.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "craft push notifications"
+    ],
+    "support": {
+    "docs": "https://github.com/levin-riegner/craft-push-notifications",
+    "issues": "https://github.com/levin-riegner/craft-push-notifications/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Levinriegner",
+            "homepage": "https://levinriegner.com"
+        },
+	{
+	      "name": "Ohmycode",
+	      "homepage": "https://www.ohmycode.cat"
+	}
+    ],
+    "require": {
+        "craftcms/cms": "^3.3",
+        "sly/notification-pusher": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+          "levinriegner\\craftpushnotifications\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Craft push notifications",
+        "handle": "craft-push-notifications",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/levin-riegner/craft-push-notifications/master/CHANGELOG.md",
+        "components": {
+            "notification": "levinriegner\\craftpushnotifications\\services\\Notification"
+        },
+        "class": "levinriegner\\craftpushnotifications\\CraftPushNotifications"
+    }
+}
