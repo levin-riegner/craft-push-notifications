@@ -35,7 +35,7 @@ use craft\web\Controller;
  * @package   CraftPushNotifications
  * @since     0.1.0
  */
-class NotificationController extends Controller
+class NotificationsController extends Controller
 {
 
     // Protected Properties
@@ -46,7 +46,15 @@ class NotificationController extends Controller
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['index', 'do-something'];
+    protected $allowAnonymous = false;
+
+    public function beforeAction($action)
+	{
+
+        $this->enableCsrfValidation = false;
+
+		return parent::beforeAction($action);
+	}
 
     // Public Methods
     // =========================================================================
@@ -57,9 +65,9 @@ class NotificationController extends Controller
      *
      * @return mixed
      */
-    public function actionIndex()
+    public function actionTokens()
     {
-        $result = 'Welcome to the NotificationController actionIndex() method';
+        $result = 'Welcome to the NotificationController actionTokens() method';
 
         return $result;
     }
@@ -70,9 +78,9 @@ class NotificationController extends Controller
      *
      * @return mixed
      */
-    public function actionDoSomething()
+    public function actionIndex()
     {
-        $result = 'Welcome to the NotificationController actionDoSomething() method';
+        $result = 'Welcome to the NotificationController actionSend() method';
 
         return $result;
     }

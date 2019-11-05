@@ -98,19 +98,28 @@ class Install extends Migration
         $tablesCreated = false;
 
     // craftpushnotifications_installation table
-        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%craftpushnotifications_installation}}');
+        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%craftpushnotifications_installations}}');
         if ($tableSchema === null) {
             $tablesCreated = true;
             $this->createTable(
-                '{{%craftpushnotifications_installation}}',
+                '{{%craftpushnotifications_installations}}',
                 [
                     'id' => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
-                    'uid' => $this->uid(),
-                // Custom columns in the table
+                    'deviceType' => $this->string()->notNull(),
+                    'timeZone' => $this->string()->notNull(),
+                    'appIdentifier' => $this->string()->notNull(),
+                    'appName' => $this->string()->notNull(),
+                    'appVersion' => $this->string()->notNull(),
+                    'osVersion' => $this->string(),
+                    'locale' => $this->string(),
                     'userId' => $this->integer(),
-                    'deviceToken' => $this->string()->notNull()->defaultValue(''),
+                    'apnsToken' => $this->string(),
+                    'fcmToken' => $this->string(),
+                    'locationLat' => $this->decimal(10, 8),
+                    'locationLon' => $this->decimal(11, 8),
+                    'locationAuthStatus' => $this->integer()
                 ]
             );
         }
@@ -125,14 +134,15 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
-    // craftpushnotifications_installation table
+        /*
+        // craftpushnotifications_installation table
         $this->createIndex(
             $this->db->getIndexName(
-                '{{%craftpushnotifications_installation}}',
+                '{{%craftpushnotifications_installations}}',
                 'some_field',
                 true
             ),
-            '{{%craftpushnotifications_installation}}',
+            '{{%craftpushnotifications_installations}}',
             'some_field',
             true
         );
@@ -143,6 +153,7 @@ class Install extends Migration
             case DbConfig::DRIVER_PGSQL:
                 break;
         }
+        */
     }
 
     /**
@@ -152,16 +163,8 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
-    // craftpushnotifications_installation table
-        $this->addForeignKey(
-            $this->db->getForeignKeyName('{{%craftpushnotifications_installation}}', 'siteId'),
-            '{{%craftpushnotifications_installation}}', 'siteId',
-            '{{%sites}}', 'id',
-            'CASCADE', 'CASCADE'
-        );
-
-        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_installation}}', 'userId'), 
-            '{{%craftpushnotifications_installation}}', 'userId', 
+        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_installations}}', 'userId'), 
+            '{{%craftpushnotifications_installations}}', 'userId', 
             '{{%users}}', 'id', 
             'CASCADE', null)
         ;
@@ -184,6 +187,6 @@ class Install extends Migration
     protected function removeTables()
     {
     // craftpushnotifications_installation table
-        $this->dropTableIfExists('{{%craftpushnotifications_installation}}');
+        $this->dropTableIfExists('{{%craftpushnotifications_installations}}');
     }
 }

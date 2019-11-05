@@ -14,12 +14,11 @@ use levinriegner\craftpushnotifications\CraftPushNotifications;
 
 use Craft;
 use craft\base\Component;
+use levinriegner\craftpushnotifications\models\InstallationModel;
+use levinriegner\craftpushnotifications\models\Notification as NotificationModel;
 use levinriegner\craftpushnotifications\records\Installation;
-use Sly\NotificationPusher\Adapter\Apns;
-use Sly\NotificationPusher\Collection\DeviceCollection;
-use Sly\NotificationPusher\Model\Device;
-use Sly\NotificationPusher\Model\Push;
-use Sly\NotificationPusher\PushManager;
+use Pushok\AuthProvider;
+use Pushok\Notification as PushokNotification;
 
 /**
  * Notification Service
@@ -36,27 +35,35 @@ use Sly\NotificationPusher\PushManager;
  */
 class Notification extends Component
 {
-
-    private $pemFile;
-    private $pemPass;
-
-    private $apnsAdapter;
+    private $authProvider;
 
     public function __construct()
     {
-        $this->pemFile = CraftPushNotifications::$plugin->getSettings()->pemFile;
-        $this->pemPass = CraftPushNotifications::$plugin->getSettings()->pemPass;
-
         $this->initialize();
     }
 
     private function initialize() : void
     {
-        // Then declare an adapter.
-        $this->apnsAdapter = new Apns(array(
-            'certificate' => $this->pemFile,
-        ));
-        
+        $apnsAuthType = CraftPushNotifications::$plugin->getSettings()->apnsAuthType;
+        if(apnsAuthType === 'token'){
+            $options = [
+                'key_id' => CraftPushNotifications::$plugin->getSettings()->apnsKeyId, // The Key ID obtained from Apple developer account
+                'team_id' => CraftPushNotifications::$plugin->getSettings()->apnsTeamId, // The Team ID obtained from Apple developer account
+                'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
+                'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
+                'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnKeySecret // Private key secret
+            ];
+
+            $this->authProvider = AuthProvider\Token::create($options);
+        }else if(apnsAuthType === 'certificate'){
+            $options = [
+                'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
+                'certificate_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
+                'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnKeySecret // Private key secret
+            ];
+
+            AuthProvider\Certificate::create($options);
+        }
     }
     // Public Methods
     // =========================================================================
@@ -69,28 +76,73 @@ class Notification extends Component
      *
      *     CraftPushNotifications::$plugin->notification->exampleService()
      *
+     * @param InstallationModel[] $installations
      * @return mixed
      */
-    public function sendNotification($user_id, $message)
+    public function sendNotification(NotificationModel $notification, array $installations)
     {
-        //Get device tokens from installations
-        $pushManager = new PushManager(PushManager::ENVIRONMENT_DEV);
-        $installations = Installation::find()->where(['userId' => $user_id])->all();
-        
-        $devices = array();
-        foreach($installations as $installation)
-            array_push($devices, new Device($installation->deviceToken));
+        $apnsInstallations  = array();
+        $fcmInstallations   = array();
+        foreach ($installations as $installation) {
+            if($installation->type === 'apns'){
+                array_push($apnsInstallations, $installation);
+            }else if($installation->type === 'fcm'){
+                array_push($fcmInstallations, $installation);
+            }
+        }
+        $results = array();
 
-        $devices = new DeviceCollection($devices);
-        $push = new Push($this->apnsAdapter, $devices, $message);
-        $pushManager->add($push);
-        $pushManager->push();
+        $results = array_merge($results, $this->sendFcmNotification($notification, $fcmInstallations));
+        $results = array_merge($results, $this->sendApnsNotification($notification, $apnsInstallations));
+
+        return $results;
+    }
+
+    /**
+     * * @param InstallationModel[] $installations
+     */
+    private function sendApnsNotification(NotificationModel $notification, array $installations){
+        $alert = Alert::create()
+                            ->setTitle($notification->title)
+                            ->setBody($notification->text);
+                
+        $payload = Payload::create()
+                        ->setAlert($alert)
+                        ->setMutableContent($notification->mutable)
+                        ->setSound($notification->sound)
+                        ->setBadge($notification->badge);
+                
+        foreach ($notification->metadata as $clave => $valor){
+            $payload->setCustomValue($clave, $valor);
+        }
+                
+        $notifications = [];
+        foreach ($installations as $installation) {
+            $notifications[] = new PushokNotification($payload,$installation->token);
+        }
+        
+        $client = new Client($this->authProvider, $production = false);
+        $client->addNotifications($notifications);
+        
+        $responses = $client->push(); // returns an array of ApnsResponseInterface (one Response per Notification)
 
         $results = array();
 
-        foreach($push->getResponses() as $token => $response)
-            $results[$token] = $response;
+        foreach ($responses as $response) {
+            $results[$response->getApnsId()] = $response;
+            $response->getStatusCode();
+            $response->getReasonPhrase();
+            $response->getErrorReason();
+            $response->getErrorDescription();
+        }
 
         return $results;
+    }
+
+    /**
+     * * @param InstallationModel[] $installations
+     */
+    private function sendFcmNotification(NotificationModel $notification, array $installations){
+        
     }
 }

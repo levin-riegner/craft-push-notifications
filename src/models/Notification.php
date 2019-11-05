@@ -10,9 +10,6 @@
 
 namespace levinriegner\craftpushnotifications\models;
 
-use levinriegner\craftpushnotifications\CraftPushNotifications;
-
-use Craft;
 use craft\base\Model;
 
 /**
@@ -32,21 +29,31 @@ class Notification extends Model
     // Public Properties
     // =========================================================================
 
+/**
+     * @var string
+     */
+    public $title = '';
+
     /**
      * @var string
      */
     public $text = '';
     
     /**
-     * @var string
+     * @var int
      */
-    public $badge = '';
+    public $badge;
     
     /**
      * @var string
      */
-    public $sound = '';
+    public $sound = 'default';
     
+/**
+     * @var bool
+     */
+    public $mutable = false;
+
     /**
      * @var array
      */

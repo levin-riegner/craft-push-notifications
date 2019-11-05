@@ -17,19 +17,73 @@
 
 {% do view.registerAssetBundle("levinriegner\\craftpushnotifications\\assetbundles\\craftpushnotifications\\CraftPushNotificationsAsset") %}
 
-{{ forms.textareaField({
-    label: 'APN PEM file',
-    instructions: 'Enter your iOS APN PEM file.',
-    id: 'pemFile',
-    name: 'pemFile',
-    rows: 20,
-    value: settings['pemFile']})
+<h1>APNS configuration</h1>
+
+{{ forms.selectField({
+    label: 'APNS App bundle ID',
+    instructions: 'Enter the bundle ID for app obtained from Apple developer account',
+    id: 'apnsAuthType',
+    name: 'apnsAuthType',
+    options: authTypes,
+    value: settings['apnsAuthType']})
 }}
 
 {{ forms.textField({
-    label: 'APN PEM password',
-    instructions: '(Optional) Enter your iOS APN PEM password',
-    id: 'pemPass',
-    name: 'pemPass',
-    value: settings['pemPass']})
+    label: 'APNS App bundle ID',
+    instructions: 'Enter the bundle ID for app obtained from Apple developer account',
+    id: 'apnsBundleId',
+    name: 'apnsBundleId',
+    value: settings['apnsBundleId']})
+}}
+
+<h2>Enter the following fields only if APNS is configured with new token based auth</h2>
+
+{{ forms.textField({
+    label: 'APNS key ID',
+    instructions: '(Necessary if token based auth) Enter the Key ID obtained from Apple developer account.',
+    id: 'apnsKeyId',
+    name: 'apnsKeyId',
+    value: settings['apnsKeyId']})
+}}
+
+{{ forms.textField({
+    label: 'APNS team ID',
+    instructions: '(Necessary if token based auth) Enter the Team ID obtained from Apple developer account',
+    id: 'apnsTeamId',
+    name: 'apnsTeamId',
+    value: settings['apnsTeamId']})
+}}
+
+{{ forms.textField({
+    label: 'APNS key path',
+    instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+    id: 'apnsTokenKeyPath',
+    name: 'apnsTokenKeyPath',
+    value: settings['apnsTokenKeyPath']})
+}}
+
+{{ forms.textField({
+    label: 'APNS key secret',
+    instructions: '(Necessary if token based auth) Enter the private key secret (',
+    id: 'apnsTokenKeySecret',
+    name: 'apnsTokenKeySecret',
+    value: settings['apnsTokenKeySecret']})
+}}
+
+<h2>Enter the following fields if APNS is configured with the old certificate based auth</h2>
+
+{{ forms.textField({
+    label: 'APNS key path',
+    instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+    id: 'apnsKeyPath',
+    name: 'apnsKeyPath',
+    value: settings['apnsKeyPath']})
+}}
+
+{{ forms.textField({
+    label: 'APNS key secret',
+    instructions: '(Necessary if token based auth) Enter the private key secret (',
+    id: 'apnsKeySecret',
+    name: 'apnsKeySecret',
+    value: settings['apnsKeySecret']})
 }}

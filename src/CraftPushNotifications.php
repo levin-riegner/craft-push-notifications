@@ -163,7 +163,11 @@ class CraftPushNotifications extends Plugin
         return Craft::$app->view->renderTemplate(
             'craft-push-notifications/settings',
             [
-                'settings' => $this->getSettings()
+                'settings' => $this->getSettings(),
+                'authTypes' => array(
+                                    ['label' =>'Token based', 'value'=>'token'], 
+                                    ['label' =>'Certificate based', 'value'=>'certificate']
+                                )
             ]
         );
     }

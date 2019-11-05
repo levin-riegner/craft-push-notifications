@@ -53,6 +53,15 @@ class Installation extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%craftpushnotifications_installation}}';
+        return '{{%craftpushnotifications_installations}}';
+    }
+
+    public function rules()
+    { 
+        // only fields in rules() are searchable
+        return [
+            ['appName', 'string'],
+            ['appVersion', 'string']
+        ];
     }
 }

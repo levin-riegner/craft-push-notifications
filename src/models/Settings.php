@@ -10,9 +10,6 @@
 
 namespace levinriegner\craftpushnotifications\models;
 
-use levinriegner\craftpushnotifications\CraftPushNotifications;
-
-use Craft;
 use craft\base\Model;
 
 /**
@@ -32,13 +29,24 @@ class Settings extends Model
     // Public Properties
     // =========================================================================
 
-    /**
-     * Some model attribute
-     *
-     * @var string
-     */
-    public $pemFile = '';
-    public $pemPass = '';
+    /** @var string */
+    public $apnsAuthType = '';
+
+    /** @var string */
+    public $apnsKeyId = '';
+    /** @var string */
+    public $apnsTeamId = '';
+    /** @var string */
+    public $apnsBundleId = '';
+    /** @var string */
+    public $apnsKeyPath = '';
+    /** @var string */
+    public $apnsKeySecret = '';
+
+    /** @var string */
+    public $apnsTokenKeyPath = '';
+    /** @var string */
+    public $apnsTokenKeySecret = '';
 
     // Public Methods
     // =========================================================================
@@ -56,10 +64,22 @@ class Settings extends Model
     public function rules()
     {
         return [
-            ['pemFile', 'string'],
-            ['pemFile', 'default', 'value' => ''],
-            ['pemPass', 'string'],
-            ['pemPass', 'default', 'value' => ''],
+            ['apnsAuthType', 'string'],
+            ['apnsKeyId', 'string'],
+            ['apnsKeyId', 'default', 'value' => ''],
+            ['apnsTeamId', 'string'],
+            ['apnsTeamId', 'default', 'value' => ''],
+            ['apnsBundleId', 'string'],
+            ['apnsBundleId', 'default', 'value' => ''],
+            ['apnsKeyPath', 'string'],
+            ['apnsKeyPath', 'default', 'value' => ''],
+            ['apnsKeySecret', 'string'],
+            ['apnsKeySecret', 'default', 'value' => ''],
+
+            ['apnsTokenKeyPath', 'string'],
+            ['apnsTokenKeyPath', 'default', 'value' => ''],
+            ['apnsTokenKeySecret', 'string'],
+            ['apnsTokenKeySecret', 'default', 'value' => ''],
         ];
     }
 }
