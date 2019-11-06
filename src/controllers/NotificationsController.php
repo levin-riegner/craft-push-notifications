@@ -10,10 +10,12 @@
 
 namespace levinriegner\craftpushnotifications\controllers;
 
-use levinriegner\craftpushnotifications\CraftPushNotifications;
-
 use Craft;
+use craft\helpers\Json;
 use craft\web\Controller;
+use levinriegner\craftpushnotifications\CraftPushNotifications;
+use levinriegner\craftpushnotifications\models\InstallationModel;
+use levinriegner\craftpushnotifications\models\NotificationModel;
 
 /**
  * Notification Controller
@@ -65,23 +67,32 @@ class NotificationsController extends Controller
      *
      * @return mixed
      */
-    public function actionTokens()
-    {
-        $result = 'Welcome to the NotificationController actionTokens() method';
-
-        return $result;
-    }
-
-    /**
-     * Handle a request going to our plugin's actionDoSomething URL,
-     * e.g.: actions/craft-push-notifications/notification/do-something
-     *
-     * @return mixed
-     */
     public function actionIndex()
     {
-        $result = 'Welcome to the NotificationController actionSend() method';
+        $post = Craft::$app->getRequest()->getRawBody();
+        $data = Json::decode($post, true);
+        $installations = array();
+        $notification = new NotificationModel();
+        foreach($data['notification'] as $var=>$value){
+            if($notification->hasProperty($var))
+                $notification->$var = $value;
+        }
 
-        return $result;
+        foreach($data['installations'] as $installationData){
+            $installation = new InstallationModel();
+            foreach($installationData as $var=>$value){
+                if($installation->hasProperty($var))
+                    $installation->$var = $value;
+
+            }
+            
+            $installations[] = $installation;
+        }
+
+        $resp = CraftPushNotifications::getInstance()->notification->sendNotification($notification, $installations);
+        return $this->asJson(
+            $resp
+        );
+
     }
 }

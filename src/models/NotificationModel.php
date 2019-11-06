@@ -24,7 +24,7 @@ use craft\base\Model;
  * @package   CraftPushNotifications
  * @since     0.1.0
  */
-class Notification extends Model
+class NotificationModel extends Model
 {
     // Public Properties
     // =========================================================================
@@ -59,4 +59,8 @@ class Notification extends Model
      */
     public $metadata = array();
 
+    public function attributes()
+    {
+        return ['title', 'text', 'badge', 'sound', 'mutable', 'metadata'];
+    }
 }

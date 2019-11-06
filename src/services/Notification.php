@@ -15,10 +15,13 @@ use levinriegner\craftpushnotifications\CraftPushNotifications;
 use Craft;
 use craft\base\Component;
 use levinriegner\craftpushnotifications\models\InstallationModel;
-use levinriegner\craftpushnotifications\models\Notification as NotificationModel;
+use levinriegner\craftpushnotifications\models\NotificationModel;
 use levinriegner\craftpushnotifications\records\Installation;
 use Pushok\AuthProvider;
+use Pushok\Client;
 use Pushok\Notification as PushokNotification;
+use Pushok\Payload;
+use Pushok\Payload\Alert;
 
 /**
  * Notification Service
@@ -45,24 +48,24 @@ class Notification extends Component
     private function initialize() : void
     {
         $apnsAuthType = CraftPushNotifications::$plugin->getSettings()->apnsAuthType;
-        if(apnsAuthType === 'token'){
+        if($apnsAuthType === 'token'){
             $options = [
                 'key_id' => CraftPushNotifications::$plugin->getSettings()->apnsKeyId, // The Key ID obtained from Apple developer account
                 'team_id' => CraftPushNotifications::$plugin->getSettings()->apnsTeamId, // The Team ID obtained from Apple developer account
                 'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
-                'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
-                'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnKeySecret // Private key secret
+                'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeyPath, // Path to private key
+                'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeySecret // Private key secret
             ];
 
             $this->authProvider = AuthProvider\Token::create($options);
-        }else if(apnsAuthType === 'certificate'){
+        }else if($apnsAuthType === 'certificate'){
             $options = [
                 'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
                 'certificate_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
-                'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnKeySecret // Private key secret
+                'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnsKeySecret // Private key secret
             ];
 
-            AuthProvider\Certificate::create($options);
+            $this->authProvider = AuthProvider\Certificate::create($options);
         }
     }
     // Public Methods
@@ -118,7 +121,7 @@ class Notification extends Component
                 
         $notifications = [];
         foreach ($installations as $installation) {
-            $notifications[] = new PushokNotification($payload,$installation->token);
+            array_push($notifications, new PushokNotification($payload,$installation->token));
         }
         
         $client = new Client($this->authProvider, $production = false);
@@ -128,12 +131,17 @@ class Notification extends Component
 
         $results = array();
 
+        Craft::info($notifications[0],'craft-push-notifications-logs');
+
         foreach ($responses as $response) {
-            $results[$response->getApnsId()] = $response;
-            $response->getStatusCode();
-            $response->getReasonPhrase();
-            $response->getErrorReason();
-            $response->getErrorDescription();
+            array_push($results, [
+                'apnsId'=>$response->getApnsId(),
+                'statuscode'=>$response->getStatusCode(),
+                'reasonPhrase'=>$response->getReasonPhrase(),
+                'errorReason'=>$response->getErrorReason(),
+                'errorDescription'=>$response->getErrorDescription()
+            ]);
+            
         }
 
         return $results;
@@ -143,6 +151,6 @@ class Notification extends Component
      * * @param InstallationModel[] $installations
      */
     private function sendFcmNotification(NotificationModel $notification, array $installations){
-        
+        return [];
     }
 }
