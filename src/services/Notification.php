@@ -131,8 +131,6 @@ class Notification extends Component
 
         $results = array();
 
-        Craft::info($notifications[0],'craft-push-notifications-logs');
-
         foreach ($responses as $response) {
             array_push($results, [
                 'apnsId'=>$response->getApnsId(),

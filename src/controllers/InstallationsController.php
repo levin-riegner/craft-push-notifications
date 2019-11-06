@@ -12,11 +12,11 @@ namespace levinriegner\craftpushnotifications\controllers;
 
 
 use Craft;
+use craft\helpers\Json;
 use craft\web\Controller;
 use levinriegner\craftpushnotifications\records\Installation;
 use yii\data\ActiveDataFilter;
 use yii\data\ActiveDataProvider;
-use yii\data\Pagination;
 
 /**
  * Notification Controller
@@ -70,9 +70,21 @@ class InstallationsController extends Controller
      */
     public function actionSave()
     {
-        $result = 'Welcome to the NotificationController actionTokens() method';
+        $post = Craft::$app->getRequest()->getRawBody();
+        $data = Json::decode($post, true);
+        $installation = Installation::find()->orWhere(['apnsToken'=>$data['apnsToken'], 'fcmToken'=>$data['fcmToken']])->one();
+        if($installation === null)
+            $installation = new Installation();
+        foreach($data as $var=>$value){
+            if($installation->hasProperty($var))
+                $installation->$var = $value;
+        }
+        $ok = $installation->save();
 
-        return $result;
+        if($ok === true)
+            return $this->asJson($installation);
+        else
+            return $this->asJson(['error'=>'Ooops, something happened']);
     }
 
     /**

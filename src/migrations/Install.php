@@ -107,6 +107,7 @@ class Install extends Migration
                     'id' => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                     'deviceType' => $this->string()->notNull(),
                     'timeZone' => $this->string()->notNull(),
                     'appIdentifier' => $this->string()->notNull(),
