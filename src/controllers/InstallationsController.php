@@ -49,7 +49,7 @@ class InstallationsController extends Controller
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = false;
+    protected $allowAnonymous = ['save'];
 
     public function beforeAction($action)
 	{
@@ -72,13 +72,14 @@ class InstallationsController extends Controller
     {
         $post = Craft::$app->getRequest()->getRawBody();
         $data = Json::decode($post, true);
-        $installation = Installation::find()->orWhere(['apnsToken'=>$data['apnsToken'], 'fcmToken'=>$data['fcmToken']])->one();
+        $installation = Installation::find()->where(['apnsToken'=>$data['apnsToken']])->orWhere(['fcmToken'=>$data['fcmToken']])->one();
         if($installation === null)
             $installation = new Installation();
         foreach($data as $var=>$value){
             if($installation->hasProperty($var))
                 $installation->$var = $value;
         }
+        $installation->userId = Craft::$app->getUser()->id;
         $ok = $installation->save();
 
         if($ok === true)
