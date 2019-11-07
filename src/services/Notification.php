@@ -105,16 +105,25 @@ class Notification extends Component
      * * @param InstallationModel[] $installations
      */
     private function sendApnsNotification(NotificationModel $notification, array $installations){
-        $alert = Alert::create()
+        
+        $alert = null;
+        if(is_string($notification->title) || is_string($notification->text))
+            $alert = Alert::create()
                             ->setTitle($notification->title)
                             ->setBody($notification->text);
                 
-        $payload = Payload::create()
-                        ->setAlert($alert)
-                        ->setMutableContent($notification->mutable)
-                        ->setSound($notification->sound)
-                        ->setBadge($notification->badge);
-                
+        $payload = Payload::create();
+        if($notification->available === true)
+            $payload->setContentAvailability($notification->available);
+        
+        if($alert !== null)
+            $payload->setAlert($alert);
+        if(is_string($notification->sound))
+            $payload->setSound($notification->sound);
+        if(is_int($notification->badge))
+            $payload->setBadge($notification->badge);
+
+
         foreach ($notification->metadata as $clave => $valor){
             $payload->setCustomValue($clave, $valor);
         }

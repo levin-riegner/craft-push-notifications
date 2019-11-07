@@ -32,12 +32,12 @@ class NotificationModel extends Model
 /**
      * @var string
      */
-    public $title = '';
+    public $title;
 
     /**
      * @var string
      */
-    public $text = '';
+    public $text;
     
     /**
      * @var int
@@ -47,12 +47,12 @@ class NotificationModel extends Model
     /**
      * @var string
      */
-    public $sound = 'default';
+    public $sound ;
     
 /**
      * @var bool
      */
-    public $mutable = false;
+    public $available = false;
 
     /**
      * @var array
@@ -61,6 +61,6 @@ class NotificationModel extends Model
 
     public function attributes()
     {
-        return ['title', 'text', 'badge', 'sound', 'mutable', 'metadata'];
+        return ['title', 'text', 'badge', 'sound', 'available', 'metadata'];
     }
 }
