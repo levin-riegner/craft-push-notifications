@@ -157,7 +157,9 @@ class Install extends Migration
                 ]
             );
 
-            $this->addPrimaryKey('installations_topics_pk', '{{%craftpushnotifications_installations_topics_assn}}', ['installation_id', 'topic_id']);
+            $this->addPrimaryKey('installations_topics_pk', 
+            '{{%craftpushnotifications_installations_topics_assn}}', 
+            ['installation_id', 'topic_id']);
         }
 
         return $tablesCreated;

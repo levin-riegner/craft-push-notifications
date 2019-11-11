@@ -61,12 +61,16 @@ class Installation extends ActiveRecord
         return $this->hasMany(Topic::className(), ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
     }  
 
+ 
+
     public function rules()
     { 
         // only fields in rules() are searchable
         return [
-            ['appName', 'string'],
-            ['appVersion', 'string'],
+            [['appName','appIdentifier','appVersion'], 'string'],
+            [['apnsToken','fcmToken'], 'string'],
+            [['locale','timeZone','osVersion'], 'string'],
+            [['locationLat','locationLon','locationAuthStatus'], 'number'],
             [['topicNames'], 'safe'],
         ];
     }

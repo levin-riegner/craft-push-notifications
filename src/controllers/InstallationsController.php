@@ -75,15 +75,14 @@ class InstallationsController extends Controller
         $installation = Installation::find()->where(['apnsToken'=>$data['apnsToken']])->orWhere(['fcmToken'=>$data['fcmToken']])->one();
         if($installation === null)
             $installation = new Installation();
-        foreach($data as $var=>$value){
-            if($installation->hasProperty($var))
-                $installation->$var = $value;
-        }
+
+        $installation->load(Craft::$app->getRequest()->getBodyParams(), '');
+
         $installation->userId = Craft::$app->getUser()->id;
         $ok = $installation->save();
 
         if($ok === true)
-            return $this->asJson($installation);
+            return $this->asJson($this->getAttributes($installation));
         else
             return $this->asJson(['error'=>'Ooops, something happened']);
     }
@@ -112,8 +111,7 @@ class InstallationsController extends Controller
         $query = Installation::find()->joinWith(['topics topics']);
         if($filterCondition)
             $query->andWhere($filterCondition);
-        else
-            $query->where("false");
+        
         
         $provider = new ActiveDataProvider([
             'query' => $query,
@@ -131,7 +129,7 @@ class InstallationsController extends Controller
         $results = $provider->getModels();
 
         return $this->asJson([
-            'data' => $this->getAttributes($results), 
+            'data' => $this->getAttributesArray($results), 
             'pagination' => 
             [
                 'currentPage' => $provider->getPagination()->page,
@@ -142,19 +140,24 @@ class InstallationsController extends Controller
         ]);
     }
 
-    protected function getAttributes($results) {
+    protected function getAttributesArray($results) {
         $arr = array();
-        $i = 0;
-        foreach($results as $mag)
-        {   
-            $arr[$i] = $mag->attributes;
-            $arr[$i]['topicNames']=array();
-            $j=0;
-            foreach($mag->topics as $topic){
-                array_push($arr[$i]['topicNames'], $topic->name);
-                $j++;
-            }
-            $i++;
+        foreach($results as $result)
+        {
+            array_push($arr, $this->getAttributes($result));
+        }
+
+        return $arr;
+    }
+
+    protected function getAttributes($result) {
+        $arr = array();
+        $arr = $result->attributes;
+        $arr['topicNames']=array();
+        $j=0;
+        foreach($result->topics as $topic){
+            array_push($arr['topicNames'], $topic->name);
+            $j++;
         }
 
         return $arr;
