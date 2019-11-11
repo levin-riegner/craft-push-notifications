@@ -111,7 +111,7 @@ class InstallationsController extends Controller
         
         $query = Installation::find()->with(['topics' => function($query) {
             $query->select(['id','name']);
-        }])->asArray();
+        }]);
         if($filterCondition)
             $query->andWhere($filterCondition);
         else
@@ -131,14 +131,9 @@ class InstallationsController extends Controller
         ]);
 
         $results = $provider->getModels();
-        /*$callback = function($result){
-            return $result->getAttributes('topics');
-        };
-        $data=array_map($callback,$results);
-*/
 
         return $this->asJson([
-            'data' => $results, 
+            'data' => $this->getAttributes($results), 
             'pagination' => 
             [
                 'currentPage' => $provider->getPagination()->page,
@@ -147,5 +142,23 @@ class InstallationsController extends Controller
                 'numResults' => $provider->getPagination()->totalCount
             ]
         ]);
+    }
+
+    protected function getAttributes($results) {
+        $arr = array();
+        $i = 0;
+        foreach($results as $mag)
+        {   
+            $arr[$i] = $mag->attributes;
+            $arr[$i]['topicNames']=array();
+            $j=0;
+            foreach($mag->topics as $topic){
+                array_push($arr[$i]['topicNames'], $topic->name);
+                $j++;
+            }
+            $i++;
+        }
+
+        return $arr;
     }
 }

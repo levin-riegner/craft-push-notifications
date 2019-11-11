@@ -36,8 +36,6 @@ use craft\db\ActiveRecord;
  */
 class Installation extends ActiveRecord
 {
-
-    public $topicNames;
     // Public Static Methods
     // =========================================================================
 
@@ -61,17 +59,7 @@ class Installation extends ActiveRecord
     public function getTopics()
     {
         return $this->hasMany(Topic::className(), ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
-    }
-
-    public function afterFind()
-    {
-  
-      parent::afterFind();
-  
-      $this['topicNames'] = ['algo'];
-    
-      return true;
-    }
+    }  
 
     public function rules()
     { 
