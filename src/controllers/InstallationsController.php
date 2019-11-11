@@ -108,10 +108,8 @@ class InstallationsController extends Controller
         if ($filter->load(\Yii::$app->request->get())) { 
             $filterCondition = $filter->build(false);
         }
-        
-        $query = Installation::find()->with(['topics' => function($query) {
-            $query->select(['id','name']);
-        }]);
+
+        $query = Installation::find()->joinWith(['topics topics']);
         if($filterCondition)
             $query->andWhere($filterCondition);
         else
