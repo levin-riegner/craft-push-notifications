@@ -97,7 +97,7 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-    // craftpushnotifications_installation table
+        // craftpushnotifications_installation table
         $tableSchema = Craft::$app->db->schema->getTableSchema('{{%craftpushnotifications_installations}}');
         if ($tableSchema === null) {
             $tablesCreated = true;
@@ -123,6 +123,41 @@ class Install extends Migration
                     'locationAuthStatus' => $this->integer()
                 ]
             );
+        }
+
+        // craftpushnotifications_topics table
+        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%craftpushnotifications_topics}}');
+        if ($tableSchema === null) {
+            $tablesCreated = true;
+            $this->createTable(
+                '{{%craftpushnotifications_topics}}',
+                [
+                    'id' => $this->primaryKey(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
+                    'name' => $this->string()->notNull(),
+                    'frequency' => $this->integer()
+                ]
+            );
+        }
+
+        // craftpushnotifications_installations_topics_assn table
+        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%craftpushnotifications_installations_topics_assn}}');
+        if ($tableSchema === null) {
+            $tablesCreated = true;
+            $this->createTable(
+                '{{%craftpushnotifications_installations_topics_assn}}',
+                [
+                    'installation_id' => $this->integer()->notNull(),
+                    'topic_id' => $this->integer()->notNull(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid()
+                ]
+            );
+
+            $this->addPrimaryKey('installations_topics_pk', '{{%craftpushnotifications_installations_topics_assn}}', ['installation_id', 'topic_id']);
         }
 
         return $tablesCreated;
@@ -167,6 +202,16 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_installations}}', 'userId'), 
             '{{%craftpushnotifications_installations}}', 'userId', 
             '{{%users}}', 'id', 
+            'CASCADE', null)
+        ;
+        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_topics_assn}}', 'installation_id'), 
+            '{{%craftpushnotifications_topics_assn}}', 'installation_id', 
+            '{{%craftpushnotifications_installations}}', 'id', 
+            'CASCADE', null)
+        ;
+        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_topics_assn}}', 'topic_id'), 
+            '{{%craftpushnotifications_topics_assn}}', 'topic_id', 
+            '{{%craftpushnotifications_topics}}', 'id', 
             'CASCADE', null)
         ;
     }
