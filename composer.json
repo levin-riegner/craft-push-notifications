@@ -27,7 +27,8 @@
     ],
     "require": {
         "craftcms/cms": "^3.3",
-        "edamov/pushok": "^0.7.0"
+        "edamov/pushok": "^0.7.0",
+        "2amigos/yii2-taggable-behavior": "dev-master"
     },
     "autoload": {
         "psr-4": {

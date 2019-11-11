@@ -109,7 +109,9 @@ class InstallationsController extends Controller
             $filterCondition = $filter->build(false);
         }
         
-        $query = Installation::find();
+        $query = Installation::find()->with(['topics' => function($query) {
+            $query->select(['id','name']);
+        }])->asArray();
         if($filterCondition)
             $query->andWhere($filterCondition);
         else
@@ -128,8 +130,15 @@ class InstallationsController extends Controller
             ],
         ]);
 
+        $results = $provider->getModels();
+        /*$callback = function($result){
+            return $result->getAttributes('topics');
+        };
+        $data=array_map($callback,$results);
+*/
+
         return $this->asJson([
-            'data' => $provider->getModels(), 
+            'data' => $results, 
             'pagination' => 
             [
                 'currentPage' => $provider->getPagination()->page,

@@ -49,7 +49,7 @@ class NotificationModel extends Model
      */
     public $sound ;
     
-/**
+    /**
      * @var bool
      */
     public $available = false;

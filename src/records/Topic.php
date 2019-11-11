@@ -34,10 +34,8 @@ use craft\db\ActiveRecord;
  * @property integer $userId
  * @property string $deviceToken
  */
-class Installation extends ActiveRecord
+class Topic extends ActiveRecord
 {
-
-    public $topicNames;
     // Public Static Methods
     // =========================================================================
 
@@ -55,42 +53,19 @@ class Installation extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%craftpushnotifications_installations}}';
+        return '{{%craftpushnotifications_topics}}';
     }
 
-    public function getTopics()
-    {
-        return $this->hasMany(Topic::className(), ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
+    public function fields(){
+        return ['name'];
     }
-
-    public function afterFind()
-    {
-  
-      parent::afterFind();
-  
-      $this['topicNames'] = ['algo'];
-    
-      return true;
-    }
-
+    /**
+     * @inheritdoc
+     */
     public function rules()
-    { 
-        // only fields in rules() are searchable
+    {
         return [
-            ['appName', 'string'],
-            ['appVersion', 'string'],
-            [['topicNames'], 'safe'],
-        ];
-    }
-
-    public function behaviors() {
-        return [
-            [
-                'class' => Taggable::className(),
-                'relation' => 'topics',
-                'attribute' => 'topicNames',
-                'removeUnusedTags' => 'true'
-            ],
+            ['name', 'required'],
         ];
     }
 }
