@@ -68,7 +68,7 @@ class Installation extends ActiveRecord
         // only fields in rules() are searchable
         return [
             [['appName','appIdentifier','appVersion'], 'string'],
-            [['apnsToken','fcmToken'], 'string'],
+            [['apnsToken','fcmToken','deviceType'], 'string'],
             [['locale','timeZone','osVersion'], 'string'],
             [['locationLat','locationLon','locationAuthStatus'], 'number'],
             [['topicNames'], 'safe'],
