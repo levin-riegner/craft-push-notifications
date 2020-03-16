@@ -19,7 +19,15 @@ use craft\services\Plugins;
 use craft\events\PluginEvent;
 use craft\web\UrlManager;
 use craft\events\RegisterUrlRulesEvent;
-
+use craft\fields\Dropdown;
+use craft\fields\PlainText;
+use craft\fields\Users;
+use craft\models\EntryType;
+use craft\models\FieldGroup;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
 use yii\base\Event;
 
 /**
@@ -170,5 +178,119 @@ class CraftPushNotifications extends Plugin
                                 )
             ]
         );
+    }
+
+    protected function afterInstall()
+    {
+        // Create the field group
+        $groupModel = $this->createFieldGroup('Notification');
+
+        $descrField = new PlainText();
+        $descrField->groupId      = $groupModel->id;
+        $descrField->name         = 'Description';
+        $descrField->handle       = 'notifDescription';
+
+        $destField = new Dropdown();
+        $destField->groupId      = $groupModel->id;
+        $destField->name         = 'Destination';
+        $destField->handle       = 'notifDestination';
+        $destField->options[] = [
+            'label' => 'Logged users',
+            'value' => 'loggedUsers',
+            'default' => 'true'
+        ];
+
+        $destField->options[] = [
+            'label' => 'All users',
+            'value' => 'allUsers',
+            'default' => ''
+        ];
+
+        $userField = new Users();
+        $userField->groupId      = $groupModel->id;
+        $userField->name         = 'Users';
+        $userField->handle       = 'notifUsers';
+
+        Craft::$app->fields->saveField($descrField);
+        Craft::$app->fields->saveField($destField);
+        Craft::$app->fields->saveField($userField);
+
+        $section = new Section();        
+        $section->name = "Notification";
+        $section->handle = "notification";
+        $section->type = Section::TYPE_CHANNEL;
+        $section->siteSettings =  [
+            new Section_SiteSettings([
+                'siteId' => Craft::$app->sites->getPrimarySite()->id,
+                'enabledByDefault' => true,
+                'hasUrls' => true,
+                'uriFormat' => 'notification/{slug}',
+                'template' => '',
+            ]),
+        ];
+
+        Craft::$app->sections->saveSection($section);
+
+        $this->createEntryType('Manual', 'manual', $section->id, [$descrField, $userField]);
+        $this->createEntryType('Automatic', 'automatic', $section->id, [$descrField, $destField]);
+
+        $entryType = Craft::$app->getSections()->getEntryTypesBySectionId($section->id)[0];
+        Craft::$app->sections->deleteEntryType($entryType);
+
+    }
+
+    protected function beforeUninstall(): bool
+    {
+        $group = $this->createFieldGroup('Notification');
+        Craft::$app->fields->deleteGroup($group);
+
+        $section = Craft::$app->sections->getSectionByHandle('notification');
+        Craft::$app->sections->deleteSection($section);
+
+        return true;
+    }
+
+    private function createEntryType($name, $handle, $sectionId, $fields){
+        $entryType = new EntryType();
+        $entryType->sectionId = $sectionId;
+        $entryType->name = $name;
+        $entryType->handle = $handle;
+        
+        $entryType->hasTitleField = true;
+        $entryType->titleLabel = Craft::t('app', 'Title');
+        $entryType->titleFormat = null;
+
+        $fieldLayout = new FieldLayout();
+
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->name = $name;
+        $fieldLayoutTab->setFields($fields);
+
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+
+        $entryType->setFieldLayout($fieldLayout);
+
+        Craft::$app->sections->saveEntryType($entryType);
+
+        return $entryType;
+    }
+
+    private function createFieldGroup($name): FieldGroup{
+        // Create the field group
+        $groupModel = new FieldGroup();
+        $groupModel->name = $name;
+        Craft::$app->fields->saveGroup($groupModel);
+
+        if($groupModel->id === null){
+            $groups = Craft::$app->fields->getAllGroups();
+            foreach($groups as $group) {
+                if($group->name != $name) {
+                    continue;
+                }
+                $groupModel = $group;
+            }
+        }
+
+        return $groupModel;
     }
 }

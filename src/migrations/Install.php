@@ -206,13 +206,13 @@ class Install extends Migration
             '{{%users}}', 'id', 
             'CASCADE', null)
         ;
-        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_topics_assn}}', 'installation_id'), 
-            '{{%craftpushnotifications_topics_assn}}', 'installation_id', 
+        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_installations_topics_assn}}', 'installation_id'), 
+            '{{%craftpushnotifications_installations_topics_assn}}', 'installation_id', 
             '{{%craftpushnotifications_installations}}', 'id', 
             'CASCADE', null)
         ;
-        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_topics_assn}}', 'topic_id'), 
-            '{{%craftpushnotifications_topics_assn}}', 'topic_id', 
+        $this->addForeignKey($this->db->getForeignKeyName('{{%craftpushnotifications_installations_topics_assn}}', 'topic_id'), 
+            '{{%craftpushnotifications_installations_topics_assn}}', 'topic_id', 
             '{{%craftpushnotifications_topics}}', 'id', 
             'CASCADE', null)
         ;
@@ -235,6 +235,8 @@ class Install extends Migration
     protected function removeTables()
     {
     // craftpushnotifications_installation table
+        $this->dropTableIfExists('{{%craftpushnotifications_installations_topics_assn}}');
         $this->dropTableIfExists('{{%craftpushnotifications_installations}}');
+        $this->dropTableIfExists('{{%craftpushnotifications_topics}}');
     }
 }
