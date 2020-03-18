@@ -15,6 +15,9 @@ use levinriegner\craftpushnotifications\models\Settings;
 
 use Craft;
 use craft\base\Plugin;
+use craft\elements\Entry;
+use craft\elements\User;
+use craft\events\ModelEvent;
 use craft\services\Plugins;
 use craft\events\PluginEvent;
 use craft\web\UrlManager;
@@ -22,12 +25,16 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\fields\Dropdown;
 use craft\fields\PlainText;
 use craft\fields\Users;
+use craft\helpers\ElementHelper;
 use craft\models\EntryType;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use levinriegner\craftpushnotifications\models\InstallationModel;
+use levinriegner\craftpushnotifications\models\NotificationModel;
+use levinriegner\craftpushnotifications\records\Installation;
 use yii\base\Event;
 
 /**
@@ -115,6 +122,52 @@ class CraftPushNotifications extends Plugin
             function (PluginEvent $event) {
                 if ($event->plugin === $this) {
                     // We were just installed
+                }
+            }
+        );
+
+        Event::on(
+            Entry::class,
+            Entry::EVENT_AFTER_SAVE,
+            function (ModelEvent $event) {
+                if ($event->sender instanceof Entry) {
+                    /** @var Entry $entry */
+                    $entry = $event->sender;
+
+                    if(ElementHelper::isDraftOrRevision($entry)){
+                        return;
+                    }
+
+                    $isNew = $event->isNew;
+                    if($entry->section->handle === 'notification' && $isNew){
+                        $notification = new NotificationModel();
+                        $notification->title = $entry->title;
+                        $notification->text = $entry->getFieldValue('notifDescription');
+
+                        $installationModels = [];
+                        if($entry->type->handle === 'manual'){
+                            /** @var User $user */
+                            foreach($entry->getFieldValue('notifUsers')->all() as $user){
+                                $installations = Installation::find()->where('userId='.$user->id)->all();
+                                if(!empty($installations)){
+                                    $installationModels = array_map(function ($installation){
+                                        $installationModel = new InstallationModel();
+                                        $installationModel->type = $installation->deviceType;
+                                        if($installationModel->type === 'apns')
+                                            $installationModel->token = $installation->apnsToken;
+                                        else if($installationModel->type === 'fcm')
+                                            $installationModel->token = $installation->fcmToken;
+
+                                        return $installationModel;
+                                    }, $installations);
+                                }
+                            }
+                        }else if($entry->type->handle === 'automatic'){
+                            //TODO get all/logged users
+                        }
+
+                        Craft::warning($this->notification->sendNotification($notification, $installationModels));
+                    }
                 }
             }
         );
