@@ -90,9 +90,7 @@ class NotificationsController extends Controller
         }
 
         $resp = CraftPushNotifications::getInstance()->notification->sendNotification($notification, $installations);
-        return $this->asJson(
-            $resp
-        );
-
+        
+        return $this->asJson($resp);
     }
 }

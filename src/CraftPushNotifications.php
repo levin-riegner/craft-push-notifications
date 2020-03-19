@@ -144,29 +144,24 @@ class CraftPushNotifications extends Plugin
                         $notification->title = $entry->title;
                         $notification->text = $entry->getFieldValue('notifDescription');
 
-                        $installationModels = [];
+                        $installations = [];
                         if($entry->type->handle === 'manual'){
                             /** @var User $user */
                             foreach($entry->getFieldValue('notifUsers')->all() as $user){
-                                $installations = Installation::find()->where('userId='.$user->id)->all();
-                                if(!empty($installations)){
-                                    $installationModels = array_map(function ($installation){
-                                        $installationModel = new InstallationModel();
-                                        $installationModel->type = $installation->deviceType;
-                                        if($installationModel->type === 'apns')
-                                            $installationModel->token = $installation->apnsToken;
-                                        else if($installationModel->type === 'fcm')
-                                            $installationModel->token = $installation->fcmToken;
-
-                                        return $installationModel;
-                                    }, $installations);
-                                }
+                                $installations = array_merge($installations, Installation::find()->where('userId='.$user->id)->all());
                             }
                         }else if($entry->type->handle === 'automatic'){
-                            //TODO get all/logged users
+                            if($entry->getFieldValue('notifDestination')->value === 'allUsers'){
+                                $installations = Installation::find()->all();
+                            }else if($entry->getFieldValue('notifDestination')->value === 'loggedUsers'){
+                                $installations = Installation::find()->where('userId is not null')->all();
+                            }
                         }
 
-                        Craft::warning($this->notification->sendNotification($notification, $installationModels));
+                        $installationModels = InstallationModel::createFromRecords($installations);
+                        $results = $this->notification->sendNotification($notification, $installationModels);
+
+                        //TODO save results in the Notification Entry in order to keep track of the notification statuses
                     }
                 }
             }
