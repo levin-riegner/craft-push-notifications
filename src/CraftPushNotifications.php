@@ -10,6 +10,7 @@
 
 namespace levinriegner\craftpushnotifications;
 
+use chasegiunta\jason\fields\JasonField;
 use levinriegner\craftpushnotifications\services\Notification as NotificationService;
 use levinriegner\craftpushnotifications\models\Settings;
 
@@ -138,8 +139,7 @@ class CraftPushNotifications extends Plugin
                         return;
                     }
 
-                    $isNew = $event->isNew;
-                    if($entry->section->handle === 'notification' && $isNew){
+                    if($entry->section->handle === 'notification' && $event->isNew){
                         $notification = new NotificationModel();
                         $notification->title = $entry->title;
                         $notification->text = $entry->getFieldValue('notifDescription');
@@ -161,7 +161,9 @@ class CraftPushNotifications extends Plugin
                         $installationModels = InstallationModel::createFromRecords($installations);
                         $results = $this->notification->sendNotification($notification, $installationModels);
 
-                        //TODO save results in the Notification Entry in order to keep track of the notification statuses
+                        $entry->setFieldValue('notifResults', json_encode($results));
+                        
+                        Craft::$app->getElements()->saveElement($entry);
                     }
                 }
             }
@@ -259,9 +261,17 @@ class CraftPushNotifications extends Plugin
         $userField->name         = 'Users';
         $userField->handle       = 'notifUsers';
 
+        $responseField = new JasonField();
+        $responseField->groupId     = $groupModel->id;
+        $responseField->name        = 'Results';
+        $responseField->handle      = 'notifResults';
+        $responseField->allowRawEditing = 'false';
+        $responseField->readonly      = 'true';
+
         Craft::$app->fields->saveField($descrField);
         Craft::$app->fields->saveField($destField);
         Craft::$app->fields->saveField($userField);
+        Craft::warning(Craft::$app->fields->saveField($responseField));
 
         $section = new Section();        
         $section->name = "Notification";
@@ -279,8 +289,8 @@ class CraftPushNotifications extends Plugin
 
         Craft::$app->sections->saveSection($section);
 
-        $this->createEntryType('Manual', 'manual', $section->id, [$descrField, $userField]);
-        $this->createEntryType('Automatic', 'automatic', $section->id, [$descrField, $destField]);
+        $this->createEntryType('Manual', 'manual', $section->id, [$descrField, $userField, $responseField]);
+        $this->createEntryType('Automatic', 'automatic', $section->id, [$descrField, $destField, $responseField]);
 
         $entryType = Craft::$app->getSections()->getEntryTypesBySectionId($section->id)[0];
         Craft::$app->sections->deleteEntryType($entryType);

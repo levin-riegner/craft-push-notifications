@@ -27,7 +27,8 @@
     ],
     "require": {
         "craftcms/cms": "^3.3",
-        "edamov/pushok": "^0.7.0"
+        "edamov/pushok": "^0.7.0",
+        "levinriegner/craft-jason": "dev-master"
     },
     "autoload": {
         "psr-4": {
@@ -44,5 +45,14 @@
             "notification": "levinriegner\\craftpushnotifications\\services\\Notification"
         },
         "class": "levinriegner\\craftpushnotifications\\CraftPushNotifications"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+      {
+        "type": "vcs",
+        "no-api": true,
+        "url": "git@github.com:levin-riegner/craft-jason.git"
+      }
+    ]
 }
