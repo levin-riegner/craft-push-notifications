@@ -239,6 +239,7 @@ class CraftPushNotifications extends Plugin
         $descrField->groupId      = $groupModel->id;
         $descrField->name         = 'Description';
         $descrField->handle       = 'notifDescription';
+        $descrField->multiline    = true;
 
         $destField = new Dropdown();
         $destField->groupId      = $groupModel->id;
