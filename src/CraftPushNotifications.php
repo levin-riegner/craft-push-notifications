@@ -36,6 +36,7 @@ use craft\models\Section_SiteSettings;
 use levinriegner\craftpushnotifications\models\InstallationModel;
 use levinriegner\craftpushnotifications\models\NotificationModel;
 use levinriegner\craftpushnotifications\records\Installation;
+use StringTemplate\Engine;
 use yii\base\Event;
 
 /**
@@ -131,37 +132,84 @@ class CraftPushNotifications extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
+
                 if ($event->sender instanceof Entry) {
                     /** @var Entry $entry */
                     $entry = $event->sender;
-
                     if(ElementHelper::isDraftOrRevision($entry)){
                         return;
                     }
 
                     if($entry->section->handle === 'notification' && $event->isNew){
+
                         $notification = new NotificationModel();
                         $notification->title = $entry->title;
                         $notification->text = $entry->getFieldValue('notifDescription');
 
-                        $installations = [];
+                        //Notification groups (one remote push notification call per group)
+                        //[ 'notification'=>NotificationModel, 'installations'=>InstallationModel[] ]
+                        $notificationGroups  = [];
+
+                        //installations to send the notifications to
+                        $installations  = [];
+
                         if($entry->type->handle === 'manual'){
                             /** @var User $user */
                             foreach($entry->getFieldValue('notifUsers')->all() as $user){
-                                $installations = array_merge($installations, Installation::find()->where('userId='.$user->id)->all());
+                                $installations = array_merge($installations, Installation::find()->where('userId='.$user->id)->joinWith('user')->all());
                             }
                         }else if($entry->type->handle === 'automatic'){
                             if($entry->getFieldValue('notifDestination')->value === 'allUsers'){
-                                $installations = Installation::find()->all();
+                                $installations = Installation::find()->joinWith('user')->all();
                             }else if($entry->getFieldValue('notifDestination')->value === 'loggedUsers'){
-                                $installations = Installation::find()->where('userId is not null')->all();
+                                $installations = Installation::find()->where('userId is not null')->joinWith('user')->all();
                             }
                         }
 
-                        $installationModels = InstallationModel::createFromRecords($installations);
-                        $results = $this->notification->sendNotification($notification, $installationModels);
+                        //Group notifications by text in order to optimize the number of remote calls to the push notification servers
+                        foreach($installations as $installation){
+                            $engine = new Engine();
+                            $variables = [];
+                            if($installation->user !== null)
+                                $variables = ['name' => $installation->user->firstName, 'surname' => $installation->user->lastName];
+                            else
+                                $variables = ['name' => '', 'surname' => ''];
 
-                        $entry->setFieldValue('notifResults', json_encode($results));
+                            $title = $engine->render($notification->title, $variables);
+                            $text = $engine->render($notification->text, $variables);
+
+                            $elemIdx = -1;
+                            foreach($notificationGroups as $key=>$notifElem){
+                                if($notifElem['notification']->title === $title && $notifElem['notification']->text === $text){
+                                    $elemIdx = $key;
+                                    break;
+                                }
+                            }
+
+                            //If the notification group didn't exist, we create it
+                            if($elemIdx == -1){
+                                $notif = new NotificationModel();
+                                $notif->attributes = $notification->attributes;
+                                $notif->title = $title;
+                                $notif->text = $text;
+
+                                $notificationGroups[] = ['notification' => $notif, 'installations' => []];
+                                $elemIdx = count($notificationGroups)-1;
+                            }
+
+                            //Append installation to the installations array of its notification group
+                            $notificationGroups[$elemIdx]['installations'][] = InstallationModel::createFromRecord($installation);
+                        }
+
+                        $notificationResults = [];
+                        foreach($notificationGroups as $notification){
+                            $notificationResults = array_merge(
+                                $notificationResults, 
+                                $this->notification->sendNotification($notification['notification'], $notification['installations'])
+                            );
+                        }
+
+                        $entry->setFieldValue('notifResults', json_encode($notificationResults));
                         
                         Craft::$app->getElements()->saveElement($entry);
                     }

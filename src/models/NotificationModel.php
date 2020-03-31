@@ -29,7 +29,7 @@ class NotificationModel extends Model
     // Public Properties
     // =========================================================================
 
-/**
+    /**
      * @var string
      */
     public $title;
@@ -47,7 +47,7 @@ class NotificationModel extends Model
     /**
      * @var string
      */
-    public $sound ;
+    public $sound;
     
     /**
      * @var bool

@@ -14,6 +14,7 @@ use levinriegner\craftpushnotifications\CraftPushNotifications;
 
 use Craft;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Installation Record
@@ -59,9 +60,12 @@ class Installation extends ActiveRecord
     public function getTopics()
     {
         return $this->hasMany(Topic::className(), ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
-    }  
+    }
 
- 
+    public function getUser(): ActiveQueryInterface
+    {
+        return $this->hasOne(CustomUser::class, ['id' => 'userId']);
+    }
 
     public function rules()
     { 

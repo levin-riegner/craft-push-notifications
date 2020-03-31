@@ -13,6 +13,12 @@ class InstallationModel extends Model
     public static function createFromRecords($installations)
     {
         return array_map(function ($installation){
+            return self::createFromRecord($installation);
+        }, $installations);
+    }
+
+    public static function createFromRecord($installation)
+    {
             $installationModel = new InstallationModel();
             $installationModel->type = $installation->deviceType;
             if($installationModel->type === 'apns')
@@ -21,6 +27,5 @@ class InstallationModel extends Model
                 $installationModel->token = $installation->fcmToken;
 
             return $installationModel;
-        }, $installations);
     }
 }
