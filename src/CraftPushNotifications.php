@@ -171,9 +171,9 @@ class CraftPushNotifications extends Plugin
                             $engine = new Engine();
                             $variables = [];
                             if($installation->user !== null)
-                                $variables = ['name' => $installation->user->firstName, 'surname' => $installation->user->lastName];
+                                $variables = ['firstname' => $installation->user->firstName, 'lastname' => $installation->user->lastName];
                             else
-                                $variables = ['name' => '', 'surname' => ''];
+                                $variables = ['firstname' => '', 'lastname' => ''];
 
                             $title = $engine->render($notification->title, $variables);
                             $text = $engine->render($notification->text, $variables);
