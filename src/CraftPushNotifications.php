@@ -280,6 +280,12 @@ class CraftPushNotifications extends Plugin
 
     protected function afterInstall()
     {
+        // Don't make the same config changes twice
+        $installed = (Craft::$app->projectConfig->get('plugins.craft-push-notifications', true) !== null);
+
+        if($installed)
+            return;
+
         // Create the field group
         $groupModel = $this->createFieldGroup('Notification');
 
@@ -320,7 +326,7 @@ class CraftPushNotifications extends Plugin
         Craft::$app->fields->saveField($descrField);
         Craft::$app->fields->saveField($destField);
         Craft::$app->fields->saveField($userField);
-        Craft::warning(Craft::$app->fields->saveField($responseField));
+        Craft::$app->fields->saveField($responseField);
 
         $section = new Section();        
         $section->name = "Notification";
@@ -352,7 +358,8 @@ class CraftPushNotifications extends Plugin
         Craft::$app->fields->deleteGroup($group);
 
         $section = Craft::$app->sections->getSectionByHandle('notification');
-        Craft::$app->sections->deleteSection($section);
+        if($section)
+            Craft::$app->sections->deleteSection($section);
 
         return true;
     }
