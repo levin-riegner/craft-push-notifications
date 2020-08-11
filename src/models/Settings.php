@@ -10,7 +10,9 @@
 
 namespace levinriegner\craftpushnotifications\models;
 
+use Craft;
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 
 /**
  * Settings Model
@@ -58,7 +60,16 @@ class Settings extends Model
 
     // Public Methods
     // =========================================================================
-
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => ['fcmApiKey','apnsKeyId','apnsTeamId','apnsBundleId','apnsKeyPath','apnsKeySecret','apnsTokenKeyPath','apnsTokenKeySecret'],
+            ],
+        ];
+    }
+    
     /**
      * Returns the validation rules for attributes.
      *
@@ -95,4 +106,38 @@ class Settings extends Model
             ['fcmApiKey', 'default', 'value' => ''],
         ];
     }
+
+    public function getApnsKeyId(): string
+    {
+        return Craft::parseEnv($this->apnsKeyId);
+    }
+    public function getApnsTeamId(): string
+    {
+        return Craft::parseEnv($this->apnsTeamId);
+    }
+    public function getApnsBundleId(): string
+    {
+        return Craft::parseEnv($this->apnsBundleId);
+    }
+    public function getApnsKeyPath(): string
+    {
+        return Craft::parseEnv($this->apnsKeyPath);
+    }
+    public function getApnsKeySecret(): string
+    {
+        return Craft::parseEnv($this->apnsKeySecret);
+    }
+    public function getApnsTokenKeyPath(): string
+    {
+        return Craft::parseEnv($this->apnsTokenKeyPath);
+    }
+    public function getApnsTokenKeySecret(): string
+    {
+        return Craft::parseEnv($this->apnsTokenKeySecret);
+    }
+    public function getFcmApiKey(): string
+    {
+        return Craft::parseEnv($this->fcmApiKey);
+    }
+
 }

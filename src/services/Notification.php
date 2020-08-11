@@ -65,19 +65,19 @@ class Notification extends Component
             $apnsAuthType = CraftPushNotifications::$plugin->getSettings()->apnsAuthType;
             if($apnsAuthType === 'token'){
                 $options = [
-                    'key_id' => CraftPushNotifications::$plugin->getSettings()->apnsKeyId, // The Key ID obtained from Apple developer account
-                    'team_id' => CraftPushNotifications::$plugin->getSettings()->apnsTeamId, // The Team ID obtained from Apple developer account
-                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
-                    'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeyPath, // Path to private key
-                    'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeySecret // Private key secret
+                    'key_id' => CraftPushNotifications::$plugin->getSettings()->getApnsKeyId(), // The Key ID obtained from Apple developer account
+                    'team_id' => CraftPushNotifications::$plugin->getSettings()->getApnsTeamId(), // The Team ID obtained from Apple developer account
+                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->getApnsBundleId(), // The bundle ID for app obtained from Apple developer account
+                    'private_key_path' => CraftPushNotifications::$plugin->getSettings()->getApnsTokenKeyPath(), // Path to private key
+                    'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->getApnsTokenKeySecret() // Private key secret
                 ];
 
                 $this->authProvider = AuthProvider\Token::create($options);
             }else if($apnsAuthType === 'certificate'){
                 $options = [
-                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
-                    'certificate_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
-                    'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnsKeySecret // Private key secret
+                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->getApnsBundleId(), // The bundle ID for app obtained from Apple developer account
+                    'certificate_path' => CraftPushNotifications::$plugin->getSettings()->getApnsKeyPath(), // Path to private key
+                    'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->getApnsKeySecret() // Private key secret
                 ];
 
                 $this->authProvider = AuthProvider\Certificate::create($options);
@@ -88,7 +88,7 @@ class Notification extends Component
         }
 
         if(CraftPushNotifications::$plugin->getSettings()->fcmEnabled){
-            $fcmApiKey = CraftPushNotifications::$plugin->settings->fcmApiKey;
+            $fcmApiKey = CraftPushNotifications::$plugin->getSettings()->getFcmApiKey();
 
             $this->fcmClient = new GcmAdapter(array(
                 'apiKey' => $fcmApiKey,

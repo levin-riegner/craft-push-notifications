@@ -54,9 +54,10 @@
             required: true
         }) }}
 
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: 'APNS App bundle ID',
             instructions: 'Enter the bundle ID for app obtained from Apple developer account',
+            suggestEnvVars: true,
             id: 'apnsBundleId',
             name: 'settings[apnsBundleId]',
             value: settings['apnsBundleId']})
@@ -74,33 +75,37 @@
 
         <div id="token" {% if settings['apnsAuthType'] != 'token' %} class="hidden"{% endif %}>
             <h2>Enter the following fields only if APNS is configured with new token based auth</h2>
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS key ID',
                 instructions: '(Necessary if token based auth) Enter the Key ID obtained from Apple developer account.',
+                suggestEnvVars: true,
                 id: 'apnsKeyId',
                 name: 'settings[apnsKeyId]',
                 value: settings['apnsKeyId']})
             }}
 
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS team ID',
                 instructions: '(Necessary if token based auth) Enter the Team ID obtained from Apple developer account',
+                suggestEnvVars: true,
                 id: 'apnsTeamId',
                 name: 'settings[apnsTeamId]',
                 value: settings['apnsTeamId']})
             }}
 
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS key path',
                 instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+                suggestEnvVars: true,
                 id: 'apnsTokenKeyPath',
                 name: 'settings[apnsTokenKeyPath]',
                 value: settings['apnsTokenKeyPath']})
             }}
 
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS key secret',
                 instructions: '(Necessary if token based auth) Enter the private key secret (',
+                suggestEnvVars: true,
                 id: 'apnsTokenKeySecret',
                 name: 'settings[apnsTokenKeySecret]',
                 value: settings['apnsTokenKeySecret']})
@@ -109,17 +114,19 @@
         <div id="certificate" {% if settings['apnsAuthType'] != 'certificate' %} class="hidden"{% endif %}>
             <h2>Enter the following fields if APNS is configured with the old certificate based auth</h2>
 
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS key path',
                 instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+                suggestEnvVars: true,
                 id: 'apnsKeyPath',
                 name: 'settings[apnsKeyPath]',
                 value: settings['apnsKeyPath']})
             }}
 
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: 'APNS key secret',
                 instructions: '(Necessary if token based auth) Enter the private key secret (',
+                suggestEnvVars: true,
                 id: 'apnsKeySecret',
                 name: 'settings[apnsKeySecret]',
                 value: settings['apnsKeySecret']})
@@ -135,9 +142,10 @@
             on: settings.fcmEnabled,
             required: true,
         }) }}
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: 'FCM Server API key',
             instructions: 'Enter the API key for app obtained from the Firebase settings screen',
+            suggestEnvVars: true,
             id: 'fcmApiKey',
             name: 'settings[fcmApiKey]',
             value: settings['fcmApiKey']})
