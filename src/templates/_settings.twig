@@ -1,0 +1,152 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Craft push notifications plugin for Craft CMS 3.x
+ *
+ * Craft push notifications Settings.twig
+ *
+ * @author    Levinriegner
+ * @copyright Copyright (c) 2019 Levinriegner
+ * @link      https://levinriegner.com
+ * @package   CraftPushNotifications
+ * @since     0.1.0
+ */
+#}
+{% extends '_layouts/cp' %}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("levinriegner\\craftpushnotifications\\assetbundles\\craftpushnotifications\\CraftPushNotificationsAsset") %}
+
+{% set crumbs = [
+    { label: 'Settings'|t('app'), url: url('settings') },
+    { label: 'Plugins'|t('app'), url: url('settings/plugins') }
+] %}
+
+{% set title = 'Craft push notifications' %}
+
+{% set tabs = {
+    apns: {label: 'APNS configuration'|t('craft-push-notifications'), url: '#apns'},
+    fcm: {label: 'FCM configuration'|t('craft-push-notifications'), url: '#fcm'},
+} %}
+
+{% set fullPageForm = true %}
+
+{% block actionButton %}
+
+    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+
+{% endblock %}
+
+
+{% block content %}
+
+
+    <input type="hidden" name="action" value="craft-push-notifications/settings/save">
+    <input type="hidden" name="pluginHandle" value="craft-push-notifications">
+
+    <div id="apns">
+        {{ forms.lightswitchField({
+            label: "Enable APNS notifications",
+            instructions: "Whether APNS notifications should be sent",
+            name: 'settings[apnsEnabled]',
+            on: settings.apnsEnabled,
+            required: true
+        }) }}
+
+        {{ forms.textField({
+            label: 'APNS App bundle ID',
+            instructions: 'Enter the bundle ID for app obtained from Apple developer account',
+            id: 'apnsBundleId',
+            name: 'settings[apnsBundleId]',
+            value: settings['apnsBundleId']})
+        }}
+
+        {{ forms.selectField({
+            label: 'APNS authentication type',
+            instructions: 'Enter the APNS authentication type',
+            id: 'apnsAuthType',
+            name: 'settings[apnsAuthType]',
+            options: authTypes,
+            toggle: true,
+            value: settings['apnsAuthType']})
+        }}
+
+        <div id="token" {% if settings['apnsAuthType'] != 'token' %} class="hidden"{% endif %}>
+            <h2>Enter the following fields only if APNS is configured with new token based auth</h2>
+            {{ forms.textField({
+                label: 'APNS key ID',
+                instructions: '(Necessary if token based auth) Enter the Key ID obtained from Apple developer account.',
+                id: 'apnsKeyId',
+                name: 'settings[apnsKeyId]',
+                value: settings['apnsKeyId']})
+            }}
+
+            {{ forms.textField({
+                label: 'APNS team ID',
+                instructions: '(Necessary if token based auth) Enter the Team ID obtained from Apple developer account',
+                id: 'apnsTeamId',
+                name: 'settings[apnsTeamId]',
+                value: settings['apnsTeamId']})
+            }}
+
+            {{ forms.textField({
+                label: 'APNS key path',
+                instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+                id: 'apnsTokenKeyPath',
+                name: 'settings[apnsTokenKeyPath]',
+                value: settings['apnsTokenKeyPath']})
+            }}
+
+            {{ forms.textField({
+                label: 'APNS key secret',
+                instructions: '(Necessary if token based auth) Enter the private key secret (',
+                id: 'apnsTokenKeySecret',
+                name: 'settings[apnsTokenKeySecret]',
+                value: settings['apnsTokenKeySecret']})
+            }}
+        </div>
+        <div id="certificate" {% if settings['apnsAuthType'] != 'certificate' %} class="hidden"{% endif %}>
+            <h2>Enter the following fields if APNS is configured with the old certificate based auth</h2>
+
+            {{ forms.textField({
+                label: 'APNS key path',
+                instructions: '(Necessary if token based auth) Enter the path to private key (.p8 file)',
+                id: 'apnsKeyPath',
+                name: 'settings[apnsKeyPath]',
+                value: settings['apnsKeyPath']})
+            }}
+
+            {{ forms.textField({
+                label: 'APNS key secret',
+                instructions: '(Necessary if token based auth) Enter the private key secret (',
+                id: 'apnsKeySecret',
+                name: 'settings[apnsKeySecret]',
+                value: settings['apnsKeySecret']})
+            }}
+        </div>
+
+    </div>
+    <div id="fcm" class="hidden">
+        {{ forms.lightswitchField({
+            label: "Enable FCM notifications",
+            instructions: "Whether FCM notifications should be sent",
+            name: 'settings[fcmEnabled]',
+            on: settings.fcmEnabled,
+            required: true,
+        }) }}
+        {{ forms.textField({
+            label: 'FCM Server API key',
+            instructions: 'Enter the API key for app obtained from the Firebase settings screen',
+            id: 'fcmApiKey',
+            name: 'settings[fcmApiKey]',
+            value: settings['fcmApiKey']})
+        }}
+
+    </div>
+
+{% endblock %}
+
+{% js %} 
+
+{% endjs %}

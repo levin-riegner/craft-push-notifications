@@ -113,7 +113,12 @@ class CraftPushNotifications extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'craft-push-notifications/notification/do-something';
+                // Merge so that settings controller action comes first (important!)
+                $event->rules = array_merge([
+                        'settings/plugins/craft-push-notifications' => 'craft-push-notifications/settings/edit',
+                    ],
+                    $event->rules
+                );
             }
         );
 
@@ -256,26 +261,6 @@ class CraftPushNotifications extends Plugin
     protected function createSettingsModel()
     {
         return new Settings();
-    }
-
-    /**
-     * Returns the rendered settings HTML, which will be inserted into the content
-     * block on the settings page.
-     *
-     * @return string The rendered settings HTML
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'craft-push-notifications/settings',
-            [
-                'settings' => $this->getSettings(),
-                'authTypes' => array(
-                                    ['label' =>'Token based', 'value'=>'token'], 
-                                    ['label' =>'Certificate based', 'value'=>'certificate']
-                                )
-            ]
-        );
     }
 
     protected function afterInstall()

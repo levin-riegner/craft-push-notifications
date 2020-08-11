@@ -28,6 +28,9 @@ class Settings extends Model
 {
     // Public Properties
     // =========================================================================
+    
+    /** @var bool */
+    public $apnsEnabled = false;
 
     /** @var string */
     public $apnsAuthType = '';
@@ -48,6 +51,11 @@ class Settings extends Model
     /** @var string */
     public $apnsTokenKeySecret = '';
 
+    /** @var bool */
+    public $fcmEnabled = false;
+    /** @var string */
+    public $fcmApiKey = '';
+
     // Public Methods
     // =========================================================================
 
@@ -64,6 +72,8 @@ class Settings extends Model
     public function rules()
     {
         return [
+            [['apnsEnabled', 'fcmEnabled'], 'boolean'],
+
             ['apnsAuthType', 'string'],
             ['apnsKeyId', 'string'],
             ['apnsKeyId', 'default', 'value' => ''],
@@ -80,6 +90,9 @@ class Settings extends Model
             ['apnsTokenKeyPath', 'default', 'value' => ''],
             ['apnsTokenKeySecret', 'string'],
             ['apnsTokenKeySecret', 'default', 'value' => ''],
+
+            ['fcmApiKey', 'string'],
+            ['fcmApiKey', 'default', 'value' => ''],
         ];
     }
 }

@@ -22,6 +22,14 @@ use Pushok\Client;
 use Pushok\Notification as PushokNotification;
 use Pushok\Payload;
 use Pushok\Payload\Alert;
+use Sly\NotificationPusher\PushManager;
+use Sly\NotificationPusher\Adapter\Gcm as GcmAdapter;
+use Sly\NotificationPusher\Collection\DeviceCollection;
+use Sly\NotificationPusher\Model\Device;
+use Sly\NotificationPusher\Model\Message;
+use Sly\NotificationPusher\Model\Push;
+use Sly\NotificationPusher\Model\PushInterface;
+use Sly\NotificationPusher\Model\ResponseInterface;
 
 /**
  * Notification Service
@@ -39,6 +47,11 @@ use Pushok\Payload\Alert;
 class Notification extends Component
 {
     private $authProvider;
+    /** @var Client */
+    private $apnsClient;
+
+    /** @var GcmAdapter */
+    private $fcmClient;
 
     public function __construct()
     {
@@ -47,25 +60,39 @@ class Notification extends Component
 
     private function initialize() : void
     {
-        $apnsAuthType = CraftPushNotifications::$plugin->getSettings()->apnsAuthType;
-        if($apnsAuthType === 'token'){
-            $options = [
-                'key_id' => CraftPushNotifications::$plugin->getSettings()->apnsKeyId, // The Key ID obtained from Apple developer account
-                'team_id' => CraftPushNotifications::$plugin->getSettings()->apnsTeamId, // The Team ID obtained from Apple developer account
-                'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
-                'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeyPath, // Path to private key
-                'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeySecret // Private key secret
-            ];
 
-            $this->authProvider = AuthProvider\Token::create($options);
-        }else if($apnsAuthType === 'certificate'){
-            $options = [
-                'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
-                'certificate_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
-                'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnsKeySecret // Private key secret
-            ];
+        if(CraftPushNotifications::$plugin->getSettings()->apnsEnabled){
+            $apnsAuthType = CraftPushNotifications::$plugin->getSettings()->apnsAuthType;
+            if($apnsAuthType === 'token'){
+                $options = [
+                    'key_id' => CraftPushNotifications::$plugin->getSettings()->apnsKeyId, // The Key ID obtained from Apple developer account
+                    'team_id' => CraftPushNotifications::$plugin->getSettings()->apnsTeamId, // The Team ID obtained from Apple developer account
+                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
+                    'private_key_path' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeyPath, // Path to private key
+                    'private_key_secret' => CraftPushNotifications::$plugin->getSettings()->apnsTokenKeySecret // Private key secret
+                ];
 
-            $this->authProvider = AuthProvider\Certificate::create($options);
+                $this->authProvider = AuthProvider\Token::create($options);
+            }else if($apnsAuthType === 'certificate'){
+                $options = [
+                    'app_bundle_id' => CraftPushNotifications::$plugin->getSettings()->apnsBundleId, // The bundle ID for app obtained from Apple developer account
+                    'certificate_path' => CraftPushNotifications::$plugin->getSettings()->apnsKeyPath, // Path to private key
+                    'certificate_secret' => CraftPushNotifications::$plugin->getSettings()->apnsKeySecret // Private key secret
+                ];
+
+                $this->authProvider = AuthProvider\Certificate::create($options);
+            }
+
+            //TODO make the production flag dynamic (maybe based on the current environment?)
+            $this->apnsClient = new Client($this->authProvider, $production = false);
+        }
+
+        if(CraftPushNotifications::$plugin->getSettings()->fcmEnabled){
+            $fcmApiKey = CraftPushNotifications::$plugin->settings->fcmApiKey;
+
+            $this->fcmClient = new GcmAdapter(array(
+                'apiKey' => $fcmApiKey,
+            ));
         }
     }
     // Public Methods
@@ -106,6 +133,10 @@ class Notification extends Component
      */
     private function sendApnsNotification(NotificationModel $notification, array $installations){
         
+        $apnsEnabled = CraftPushNotifications::$plugin->settings->apnsEnabled;
+        if(!$apnsEnabled)
+            return [];
+
         $alert = null;
         if(is_string($notification->title) || is_string($notification->text))
             $alert = Alert::create()
@@ -133,10 +164,9 @@ class Notification extends Component
             array_push($notifications, new PushokNotification($payload,$installation->token));
         }
         
-        $client = new Client($this->authProvider, $production = false);
-        $client->addNotifications($notifications);
+        $this->apnsClient->addNotifications($notifications);
         
-        $responses = $client->push(); // returns an array of ApnsResponseInterface (one Response per Notification)
+        $responses = $this->apnsClient->push(); // returns an array of ApnsResponseInterface (one Response per Notification)
 
         $results = array();
 
@@ -158,6 +188,41 @@ class Notification extends Component
      * * @param InstallationModel[] $installations
      */
     private function sendFcmNotification(NotificationModel $notification, array $installations){
-        return [];
+        $fcmEnabled = CraftPushNotifications::$plugin->settings->fcmEnabled;
+        if(!$fcmEnabled)
+            return [];
+        
+        $devices = new DeviceCollection(array_map(function($installation) {
+                return new Device($installation->token);
+            }, $installations)
+        );
+
+        $params = array(
+            'notificationData' => array('title' => $notification->title, 'body' => $notification->text, 'sound' => $notification->sound), 
+            //'android' => array('notification_count' => $notification->badge), 
+            'data' => $notification->metadata
+        );
+
+        $message = new Message($notification->text, $params);
+        $pushManager = new PushManager(PushManager::ENVIRONMENT_DEV);
+
+        $push = new Push($this->fcmClient, $devices, $message);
+        $pushManager->add($push);
+        
+        $responses = $pushManager->push(); // Returns a collection of notified devices
+        
+        $results = array();
+        /** @var PushInterface */
+        foreach($responses as $response){
+            foreach($response->getResponses() as $token => $deviceResponse){
+                array_push($results, [
+                    'fcmId'=>$token,
+                    'statuscode'=>array_key_exists('error', $deviceResponse) ? $deviceResponse['error']: 'OK',
+                ]);
+            }
+            
+        }
+
+        return $results;
     }
 }
