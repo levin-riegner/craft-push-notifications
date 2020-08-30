@@ -59,8 +59,13 @@ class NotificationModel extends Model
      */
     public $metadata = array();
 
-    public function attributes()
+    public function rules()
     {
-        return ['title', 'text', 'badge', 'sound', 'available', 'metadata'];
+        return [
+            [['title', 'text'], 'required'],
+            [['title', 'text', 'sound'], 'string'],
+            [['badge'], 'number', 'integerOnly' => true],
+            [['available'], 'boolean']
+        ];
     }
 }

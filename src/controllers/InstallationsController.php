@@ -72,19 +72,31 @@ class InstallationsController extends Controller
     {
         $post = Craft::$app->getRequest()->getRawBody();
         $data = Json::decode($post, true);
-        $installation = Installation::find()->where(['apnsToken'=>$data['apnsToken']])->orWhere(['fcmToken'=>$data['fcmToken']])->one();
+        $installation = new Installation();
+        $installation->setAttributes($data);
+        if(!$installation->validate()){
+            Craft::$app->getResponse()->setStatusCode(400);
+            return $this->asJson(['errors' => $installation->getErrors()]);
+        }
+
+        if(isset($installation->apnsToken))
+            $installation = Installation::find()->where(['apnsToken'=>$installation->apnsToken])->one();
+        if(isset($installation->fcmToken))
+            $installation = Installation::find()->where(['fcmToken'=>$installation->fcmToken])->one();
         if($installation === null)
             $installation = new Installation();
 
-        $installation->load(Craft::$app->getRequest()->getBodyParams(), '');
-
+        $installation->setAttributes($data);
         $installation->userId = Craft::$app->getUser()->id;
         $ok = $installation->save();
 
         if($ok === true)
             return $this->asJson($this->getAttributes($installation));
-        else
-            return $this->asJson(['error'=>'Ooops, something happened']);
+        else{
+            Craft::$app->getResponse()->setStatusCode(400);
+            return $this->asJson(['errors' => $installation->getErrors()]);
+        }
+            
     }
 
     /**

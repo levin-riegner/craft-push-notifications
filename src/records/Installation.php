@@ -14,6 +14,7 @@ use levinriegner\craftpushnotifications\CraftPushNotifications;
 
 use Craft;
 use craft\db\ActiveRecord;
+use levinriegner\craftpushnotifications\models\validators\EitherValidator;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -59,7 +60,7 @@ class Installation extends ActiveRecord
 
     public function getTopics()
     {
-        return $this->hasMany(Topic::className(), ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
+        return $this->hasMany(Topic::class, ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
     }
 
     public function getUser(): ActiveQueryInterface
@@ -71,18 +72,36 @@ class Installation extends ActiveRecord
     { 
         // only fields in rules() are searchable
         return [
+            [['deviceType'], 'in', 'range' => ['android','ios']],
             [['appName','appIdentifier','appVersion'], 'string'],
             [['apnsToken','fcmToken','deviceType'], 'string'],
             [['locale','timeZone','osVersion'], 'string'],
             [['locationLat','locationLon','locationAuthStatus'], 'number'],
+            [['deviceType', 'appIdentifier'], 'required'],
+            [['apnsToken'], 'apns_validator'],
+            [['apnsToken', 'fcmToken'], EitherValidator::class, 'skipOnEmpty' => false],
             [['topicNames'], 'safe'],
         ];
+    }
+
+    public function apns_validator($attr_name)
+    {
+        if($this->deviceType === 'android'){
+            $this->addError(
+                $attr_name, 
+                'This field cannot be set if deviceType is android'
+            );
+
+            return false;
+        }
+
+        return true;
     }
 
     public function behaviors() {
         return [
             [
-                'class' => Taggable::className(),
+                'class' => Taggable::class,
                 'relation' => 'topics',
                 'attribute' => 'topicNames',
                 'removeUnusedTags' => 'true'

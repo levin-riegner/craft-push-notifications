@@ -38,7 +38,7 @@ class CustomUser extends User
      */
     public static function find()
     {
-        $query = Yii::createObject(ActiveQuery::className(), [CustomUser::class])
+        $query = Yii::createObject(ActiveQuery::class, [CustomUser::class])
             ->joinWith(['element element']);
 
         // todo: remove schema version condition after next beakpoint

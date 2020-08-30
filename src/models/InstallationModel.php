@@ -8,7 +8,16 @@ class InstallationModel extends Model
 {
     public $token;
     public $type;
+    public $deviceType;
 
+    public function rules()
+    {
+        return [
+            [['token', 'type'], 'string'],
+            [['token', 'type'], 'required'],
+            [['type'], 'in', 'range' => ['fcm','apns']],
+        ];
+    }
 
     public static function createFromRecords($installations)
     {
@@ -20,11 +29,14 @@ class InstallationModel extends Model
     public static function createFromRecord($installation)
     {
             $installationModel = new InstallationModel();
-            $installationModel->type = $installation->deviceType;
-            if($installationModel->type === 'apns')
+            $installationModel->deviceType = $installation->deviceType;
+            if(!empty($installation->apnsToken)){
+                $installationModel->type === 'apns';
                 $installationModel->token = $installation->apnsToken;
-            else if($installationModel->type === 'fcm')
+            }else if($installationModel->type === 'fcm'){
+                $installationModel->type === 'fcm';
                 $installationModel->token = $installation->fcmToken;
+            }
 
             return $installationModel;
     }

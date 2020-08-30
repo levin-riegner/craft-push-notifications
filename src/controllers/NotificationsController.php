@@ -73,19 +73,20 @@ class NotificationsController extends Controller
         $data = Json::decode($post, true);
         $installations = array();
         $notification = new NotificationModel();
-        foreach($data['notification'] as $var=>$value){
-            if($notification->hasProperty($var))
-                $notification->$var = $value;
+        $notification->setAttributes($data['notification']);
+        if(!$notification->validate()){
+            Craft::$app->getResponse()->setStatusCode(400);
+            return $this->asJson(['errors' => ['notification'=> $notification->getErrors()]]);
         }
 
         foreach($data['installations'] as $installationData){
             $installation = new InstallationModel();
-            foreach($installationData as $var=>$value){
-                if($installation->hasProperty($var))
-                    $installation->$var = $value;
-
+            $installation->setAttributes($installationData);
+            if(!$installation->validate()){
+                Craft::$app->getResponse()->setStatusCode(400);
+                return $this->asJson(['errors' => ['installations'=> $installation->getErrors()]]);
             }
-            
+
             $installations[] = $installation;
         }
 
