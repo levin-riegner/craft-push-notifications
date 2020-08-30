@@ -33,7 +33,7 @@ class InstallationModel extends Model
             if(!empty($installation->apnsToken)){
                 $installationModel->type === 'apns';
                 $installationModel->token = $installation->apnsToken;
-            }else if($installationModel->type === 'fcm'){
+            }else{
                 $installationModel->type === 'fcm';
                 $installationModel->token = $installation->fcmToken;
             }
