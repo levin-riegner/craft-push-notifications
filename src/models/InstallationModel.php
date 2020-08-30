@@ -31,10 +31,10 @@ class InstallationModel extends Model
             $installationModel = new InstallationModel();
             $installationModel->deviceType = $installation->deviceType;
             if(!empty($installation->apnsToken)){
-                $installationModel->type === 'apns';
+                $installationModel->type = 'apns';
                 $installationModel->token = $installation->apnsToken;
             }else{
-                $installationModel->type === 'fcm';
+                $installationModel->type = 'fcm';
                 $installationModel->token = $installation->fcmToken;
             }
 
