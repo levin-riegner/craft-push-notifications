@@ -84,7 +84,7 @@ class Notification extends Component
             }
 
             //TODO make the production flag dynamic (maybe based on the current environment?)
-            $this->apnsClient = new Client($this->authProvider, $production = false);
+            $this->apnsClient = new Client($this->authProvider, !Craft::$app->getConfig()->general->devMode);
         }
 
         if(CraftPushNotifications::$plugin->getSettings()->fcmEnabled){
@@ -204,7 +204,7 @@ class Notification extends Component
         );
 
         $message = new Message($notification->text, $params);
-        $pushManager = new PushManager(PushManager::ENVIRONMENT_DEV);
+        $pushManager = new PushManager(Craft::$app->getConfig()->general->devMode ? PushManager::ENVIRONMENT_DEV : PushManager::ENVIRONMENT_PROD);
 
         $push = new Push($this->fcmClient, $devices, $message);
         $pushManager->add($push);
