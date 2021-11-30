@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2019 Levinriegner
  */
 
-namespace levinriegner\craftpushnotifications\assetbundles\CraftPushNotifications;
+namespace levinriegner\craftpushnotifications\assetbundles\craftpushnotifications;
 
 use Craft;
 use craft\web\AssetBundle;

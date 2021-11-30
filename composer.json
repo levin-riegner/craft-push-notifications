@@ -2,7 +2,7 @@
     "name": "levinriegner/craft-push-notifications",
     "description": "Enable sending push notifications from Craft",
     "type": "craft-plugin",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "keywords": [
         "craft",
         "cms",
@@ -26,11 +26,11 @@
 	}
     ],
     "require": {
-        "craftcms/cms": "^3.3",
+        "craftcms/cms": "^3.4",
         "edamov/pushok": "^0.7.0",
         "levinriegner/craft-jason": "1.0.3",
         "nicmart/string-template": "^0.1.1",
-        "sly/notification-pusher": "^2.3"
+        "sly/notification-pusher": "dev-master#4847d2e3efe7091dcf5143af63aef00bb03db048"
     },
     "autoload": {
         "psr-4": {

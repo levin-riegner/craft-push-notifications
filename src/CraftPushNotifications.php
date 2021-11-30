@@ -356,7 +356,7 @@ class CraftPushNotifications extends Plugin
         $entryType->handle = $handle;
         
         $entryType->hasTitleField = true;
-        $entryType->titleLabel = Craft::t('app', 'Title');
+        //$entryType->titleLabel = Craft::t('app', 'Title');
         $entryType->titleFormat = null;
 
         $fieldLayout = new FieldLayout();
