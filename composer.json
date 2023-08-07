@@ -2,7 +2,7 @@
     "name": "levinriegner/craft-push-notifications",
     "description": "Enable sending push notifications from Craft",
     "type": "craft-plugin",
-    "version": "0.4.0",
+    "version": "1.0.0",
     "keywords": [
         "craft",
         "cms",
@@ -26,11 +26,12 @@
 	}
     ],
     "require": {
-        "craftcms/cms": "^3.4",
-        "edamov/pushok": "^0.7.0",
-        "levinriegner/craft-jason": "1.0.3",
+        "php": "^8.1",
+        "craftcms/cms": "^4.0.0",
+        "edamov/pushok": "^0.14.3",
         "nicmart/string-template": "^0.1.1",
-        "sly/notification-pusher": "dev-master#4847d2e3efe7091dcf5143af63aef00bb03db048"
+        "chasegiunta/craft-jason": "^3.0",
+        "sly/notification-pusher": "3.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -51,16 +52,26 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "repositories": [
-      {
-        "type": "vcs",
-        "no-api": true,
-        "url": "git@github.com:levin-riegner/craft-jason.git"
-      }
-    ],
+        {
+          "type": "vcs",
+          "url": "https://github.com/ohdonpiano/NotificationPusher.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/ohdonpiano/ZendService_Apple_Apns.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/ohdonpiano/ZendService_Google_Gcm.git"
+        }
+      ],
     "config": {
         "allow-plugins": {
             "craftcms/plugin-installer": true,
             "yiisoft/yii2-composer": true
         }
+    },
+    "require-dev": {
+        "craftcms/rector": "dev-main"
     }
 }

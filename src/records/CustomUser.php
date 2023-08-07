@@ -36,7 +36,7 @@ class CustomUser extends User
     /**
      * @return ActiveQuery
      */
-    public static function find()
+    public static function find(): \craft\db\ActiveQuery
     {
         $query = Yii::createObject(ActiveQuery::class, [CustomUser::class])
             ->joinWith(['element element']);

@@ -15,6 +15,7 @@ use levinriegner\craftpushnotifications\services\Notification as NotificationSer
 use levinriegner\craftpushnotifications\models\Settings;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Plugin;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -23,6 +24,7 @@ use craft\services\Plugins;
 use craft\events\PluginEvent;
 use craft\web\UrlManager;
 use craft\events\RegisterUrlRulesEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\Dropdown;
 use craft\fields\PlainText;
 use craft\fields\Users;
@@ -78,7 +80,7 @@ class CraftPushNotifications extends Plugin
      *
      * @var string
      */
-    public $schemaVersion = '0.1.0';
+    public string $schemaVersion = '0.1.0';
 
     // Public Methods
     // =========================================================================
@@ -258,12 +260,12 @@ class CraftPushNotifications extends Plugin
      *
      * @return \craft\base\Model|null
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?\craft\base\Model
     {
         return new Settings();
     }
 
-    protected function afterInstall()
+    protected function afterInstall(): void
     {
         // Don't make the same config changes twice
         $installed = (Craft::$app->projectConfig->get('plugins.craft-push-notifications', true) !== null);
@@ -308,10 +310,14 @@ class CraftPushNotifications extends Plugin
         $responseField->allowRawEditing = 'false';
         $responseField->readonly      = 'true';
 
-        Craft::$app->fields->saveField($descrField);
-        Craft::$app->fields->saveField($destField);
-        Craft::$app->fields->saveField($userField);
-        Craft::$app->fields->saveField($responseField);
+        if(!Craft::$app->fields->saveField($descrField))
+            $descrField = Craft::$app->fields->getFieldByHandle($descrField->handle);
+        if(!Craft::$app->fields->saveField($destField))
+            $destField = Craft::$app->fields->getFieldByHandle($destField->handle);
+        if(!Craft::$app->fields->saveField($userField))
+            $userField = Craft::$app->fields->getFieldByHandle($userField->handle);
+        if(!Craft::$app->fields->saveField($responseField))
+            $responseField = Craft::$app->fields->getFieldByHandle($responseField->handle);
 
         $section = new Section();        
         $section->name = "Notification";
@@ -327,17 +333,20 @@ class CraftPushNotifications extends Plugin
             ]),
         ];
 
-        Craft::$app->sections->saveSection($section);
+        if(!Craft::$app->sections->saveSection($section))
+            $section = Craft::$app->sections->getSectionByHandle($section->handle);
+        
 
         $this->createEntryType('Manual', 'manual', $section->id, [$descrField, $userField, $responseField]);
         $this->createEntryType('Automatic', 'automatic', $section->id, [$descrField, $destField, $responseField]);
 
+        //Delete 'default' entry type
         $entryType = Craft::$app->getSections()->getEntryTypesBySectionId($section->id)[0];
         Craft::$app->sections->deleteEntryType($entryType);
 
     }
 
-    protected function beforeUninstall(): bool
+    protected function beforeUninstall(): void
     {
         $group = $this->createFieldGroup('Notification');
         Craft::$app->fields->deleteGroup($group);
@@ -345,8 +354,6 @@ class CraftPushNotifications extends Plugin
         $section = Craft::$app->sections->getSectionByHandle('notification');
         if($section)
             Craft::$app->sections->deleteSection($section);
-
-        return true;
     }
 
     private function createEntryType($name, $handle, $sectionId, $fields){
@@ -356,14 +363,23 @@ class CraftPushNotifications extends Plugin
         $entryType->handle = $handle;
         
         $entryType->hasTitleField = true;
-        //$entryType->titleLabel = Craft::t('app', 'Title');
         $entryType->titleFormat = null;
 
         $fieldLayout = new FieldLayout();
+        $fieldLayout->type = 'craft\elements\Entry';
 
         $fieldLayoutTab = new FieldLayoutTab();
         $fieldLayoutTab->name = $name;
-        $fieldLayoutTab->setFields($fields);
+        
+        $fieldLayoutTab->setLayout($fieldLayout);
+        
+        $fieldLayoutTab->setElements(array_map(function(Field $field){
+            return [
+                'type' => CustomField::class,
+                'fieldUid' => $field->uid,
+                'required' => false
+            ];
+        }, $fields));
 
         $fieldLayout->setTabs([$fieldLayoutTab]);
 

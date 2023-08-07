@@ -49,9 +49,9 @@ class InstallationsController extends Controller
      *         The actions must be in 'kebab-case'
      * @access protected
      */
-    protected $allowAnonymous = ['save'];
+    protected array|int|bool $allowAnonymous = ['save'];
 
-    public function beforeAction($action)
+    public function beforeAction($action): bool
 	{
 
         $this->enableCsrfValidation = false;

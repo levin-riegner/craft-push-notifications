@@ -59,7 +59,7 @@ class NotificationModel extends Model
      */
     public $metadata = array();
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['title', 'text'], 'required'],

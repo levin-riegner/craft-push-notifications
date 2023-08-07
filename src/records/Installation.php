@@ -98,7 +98,7 @@ class Installation extends ActiveRecord
         return true;
     }
 
-    public function behaviors() {
+    public function behaviors(): array {
         return [
             [
                 'class' => Taggable::class,

@@ -10,7 +10,7 @@ class InstallationModel extends Model
     public $type;
     public $deviceType;
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['token', 'type'], 'string'],
