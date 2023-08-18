@@ -14,6 +14,7 @@ use levinriegner\craftpushnotifications\CraftPushNotifications;
 
 use Craft;
 use craft\base\Component;
+use levinriegner\craftpushnotifications\adapters\FirebaseAdapter;
 use levinriegner\craftpushnotifications\models\InstallationModel;
 use levinriegner\craftpushnotifications\models\NotificationModel;
 use levinriegner\craftpushnotifications\records\Installation;
@@ -50,7 +51,7 @@ class Notification extends Component
     /** @var Client */
     private $apnsClient;
 
-    /** @var GcmAdapter */
+    /** @var FirebaseAdapter */
     private $fcmClient;
 
     public function __construct()
@@ -88,10 +89,8 @@ class Notification extends Component
         }
 
         if(CraftPushNotifications::$plugin->getSettings()->fcmEnabled){
-            $fcmApiKey = CraftPushNotifications::$plugin->getSettings()->getFcmApiKey();
-
-            $this->fcmClient = new GcmAdapter(array(
-                'apiKey' => $fcmApiKey,
+            $this->fcmClient = new FirebaseAdapter(array(
+                'firebaseCredentials' => CraftPushNotifications::$plugin->getSettings()->getFirebaseCredentials(),
             ));
         }
     }
@@ -217,7 +216,7 @@ class Notification extends Component
             foreach($response->getResponses() as $token => $deviceResponse){
                 array_push($results, [
                     'fcmId'=>$token,
-                    'statuscode'=>array_key_exists('error', $deviceResponse) ? $deviceResponse['error']: 'OK',
+                    'statuscode'=> $deviceResponse->isFailure() ? $deviceResponse->error()->getMessage(): 'OK',
                 ]);
             }
             

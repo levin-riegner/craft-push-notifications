@@ -143,12 +143,12 @@
             required: true,
         }) }}
         {{ forms.autosuggestField({
-            label: 'FCM Server API key',
-            instructions: 'Enter the API key for app obtained from the Firebase settings screen',
+            label: 'Firebase Credentials',
+            instructions: 'Enter the JSON credentials from https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk',
             suggestEnvVars: true,
-            id: 'fcmApiKey',
-            name: 'settings[fcmApiKey]',
-            value: settings['fcmApiKey']})
+            id: 'firebaseCredentials',
+            name: 'settings[firebaseCredentials]',
+            value: settings['firebaseCredentials']})
         }}
 
     </div>

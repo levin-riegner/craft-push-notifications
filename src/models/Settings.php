@@ -13,6 +13,7 @@ namespace levinriegner\craftpushnotifications\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 
 /**
  * Settings Model
@@ -57,6 +58,8 @@ class Settings extends Model
     public $fcmEnabled = false;
     /** @var string */
     public $fcmApiKey = '';
+    /** @var string */
+    public string $firebaseCredentials = '';
 
     // Public Methods
     // =========================================================================
@@ -65,7 +68,7 @@ class Settings extends Model
         return [
             'parser' => [
                 'class' => EnvAttributeParserBehavior::class,
-                'attributes' => ['fcmApiKey','apnsKeyId','apnsTeamId','apnsBundleId','apnsKeyPath','apnsKeySecret','apnsTokenKeyPath','apnsTokenKeySecret'],
+                'attributes' => ['firebaseCredentials','fcmApiKey','apnsKeyId','apnsTeamId','apnsBundleId','apnsKeyPath','apnsKeySecret','apnsTokenKeyPath','apnsTokenKeySecret'],
             ],
         ];
     }
@@ -104,40 +107,45 @@ class Settings extends Model
 
             ['fcmApiKey', 'string'],
             ['fcmApiKey', 'default', 'value' => ''],
+            ['firebaseCredentials', 'string'],
+            ['firebaseCredentials', 'default', 'value' => ''],
         ];
     }
 
     public function getApnsKeyId(): string
     {
-        return Craft::parseEnv($this->apnsKeyId);
+        return App::parseEnv($this->apnsKeyId);
     }
     public function getApnsTeamId(): string
     {
-        return Craft::parseEnv($this->apnsTeamId);
+        return App::parseEnv($this->apnsTeamId);
     }
     public function getApnsBundleId(): string
     {
-        return Craft::parseEnv($this->apnsBundleId);
+        return App::parseEnv($this->apnsBundleId);
     }
     public function getApnsKeyPath(): string
     {
-        return Craft::parseEnv($this->apnsKeyPath);
+        return App::parseEnv($this->apnsKeyPath);
     }
     public function getApnsKeySecret(): string
     {
-        return Craft::parseEnv($this->apnsKeySecret);
+        return App::parseEnv($this->apnsKeySecret);
     }
     public function getApnsTokenKeyPath(): string
     {
-        return Craft::parseEnv($this->apnsTokenKeyPath);
+        return App::parseEnv($this->apnsTokenKeyPath);
     }
     public function getApnsTokenKeySecret(): string
     {
-        return Craft::parseEnv($this->apnsTokenKeySecret);
+        return App::parseEnv($this->apnsTokenKeySecret);
     }
     public function getFcmApiKey(): string
     {
-        return Craft::parseEnv($this->fcmApiKey);
+        return App::parseEnv($this->fcmApiKey);
     }
-
+    public function getFirebaseCredentials(): string
+    {
+        return App::parseEnv($this->firebaseCredentials);
+    }
 }

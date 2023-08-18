@@ -2,7 +2,7 @@
     "name": "levinriegner/craft-push-notifications",
     "description": "Enable sending push notifications from Craft",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "keywords": [
         "craft",
         "cms",
@@ -11,8 +11,8 @@
         "craft push notifications"
     ],
     "support": {
-    "docs": "https://github.com/levin-riegner/craft-push-notifications",
-    "issues": "https://github.com/levin-riegner/craft-push-notifications/issues"
+        "docs": "https://github.com/levin-riegner/craft-push-notifications",
+        "issues": "https://github.com/levin-riegner/craft-push-notifications/issues"
     },
     "license": "MIT",
     "authors": [
@@ -20,10 +20,10 @@
             "name": "Levinriegner",
             "homepage": "https://levinriegner.com"
         },
-	{
-	      "name": "Ohmycode",
-	      "homepage": "https://www.ohmycode.cat"
-	}
+        {
+            "name": "Ohmycode",
+            "homepage": "https://www.ohmycode.cat"
+        }
     ],
     "require": {
         "php": "^8.1",
@@ -31,14 +31,20 @@
         "edamov/pushok": "^0.14.3",
         "nicmart/string-template": "^0.1.1",
         "chasegiunta/craft-jason": "^3.0",
-        "sly/notification-pusher": "3.0.0"
+        "kreait/firebase-php": "^7.5",
+        "sly/notification-pusher": "^3.0"
     },
     "autoload": {
         "psr-4": {
-          "levinriegner\\craftpushnotifications\\": "src/"
+            "levinriegner\\craftpushnotifications\\": "src/"
         }
     },
     "extra": {
+        "patches": {
+            "sly/notification-pusher": [
+                "patches/sly-notification-pusher-src-sly-notificationpusher-collection-abstractcollection-php.patch"
+            ]
+        },
         "name": "Craft push notifications",
         "handle": "craft-push-notifications",
         "hasCpSettings": true,
@@ -53,8 +59,8 @@
     "prefer-stable": true,
     "repositories": [
         {
-          "type": "vcs",
-          "url": "https://github.com/ohdonpiano/NotificationPusher.git"
+            "type": "vcs",
+            "url": "https://github.com/ohdonpiano/NotificationPusher.git"
         },
         {
             "type": "vcs",
@@ -64,7 +70,7 @@
             "type": "vcs",
             "url": "https://github.com/ohdonpiano/ZendService_Google_Gcm.git"
         }
-      ],
+    ],
     "config": {
         "allow-plugins": {
             "craftcms/plugin-installer": true,
@@ -72,6 +78,7 @@
         }
     },
     "require-dev": {
-        "craftcms/rector": "dev-main"
+        "craftcms/rector": "dev-main",
+        "symplify/vendor-patches": "^11.2"
     }
 }

@@ -1,0 +1,19 @@
+--- /dev/null
++++ ../src/Sly/NotificationPusher/Collection/AbstractCollection.php
+@@ -17,6 +17,7 @@
+ use IteratorAggregate;
+ use ReturnTypeWillChange;
+ use SeekableIterator;
++use Sly\NotificationPusher\Model\DeviceInterface;
+ use Sly\NotificationPusher\Model\MessageInterface;
+ 
+ /**
+@@ -41,7 +42,7 @@
+      *
+      * @return MessageInterface|false
+      */
+-    public function get(string $key): bool|MessageInterface
++    public function get(string $key): bool|MessageInterface|DeviceInterface
+     {
+         return isset($this->coll[$key]) ? $this->coll[$key] : false;
+     }
