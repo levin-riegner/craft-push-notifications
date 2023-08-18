@@ -60,7 +60,7 @@ class Installation extends ActiveRecord
 
     public function getTopics()
     {
-        return $this->hasMany(Topic::class, ['id' => 'topic_id'])->viaTable('craft_craftpushnotifications_installations_topics_assn', ['installation_id' => 'id']);
+        return $this->hasMany(Topic::class, ['id' => 'topic_id'])->viaTable('{{%craftpushnotifications_installations_topics_assn}}', ['installation_id' => 'id']);
     }
 
     public function getUser(): ActiveQueryInterface

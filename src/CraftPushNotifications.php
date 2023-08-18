@@ -137,7 +137,7 @@ class CraftPushNotifications extends Plugin
 
         Event::on(
             Entry::class,
-            Entry::EVENT_AFTER_SAVE,
+            Entry::EVENT_BEFORE_SAVE,
             function (ModelEvent $event) {
 
                 if ($event->sender instanceof Entry) {
@@ -147,7 +147,8 @@ class CraftPushNotifications extends Plugin
                         return;
                     }
 
-                    if($entry->section->handle === 'notification' && $event->isNew){
+
+                    if($entry->section->handle === 'notification' && $event->sender->firstSave){
 
                         $notification = new NotificationModel();
                         $notification->title = $entry->title;
@@ -217,8 +218,6 @@ class CraftPushNotifications extends Plugin
                         }
 
                         $entry->setFieldValue('notifResults', json_encode($notificationResults));
-                        
-                        Craft::$app->getElements()->saveElement($entry);
                     }
                 }
             }

@@ -13,10 +13,10 @@ namespace levinriegner\craftpushnotifications\records;
 use levinriegner\craftpushnotifications\CraftPushNotifications;
 
 use Craft;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\records\User;
 use Yii;
-use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -36,7 +36,7 @@ class CustomUser extends User
     /**
      * @return ActiveQuery
      */
-    public static function find(): \craft\db\ActiveQuery
+    public static function find(): ActiveQuery
     {
         $query = Yii::createObject(ActiveQuery::class, [CustomUser::class])
             ->joinWith(['element element']);
